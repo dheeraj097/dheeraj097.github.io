@@ -1,183 +1,146 @@
 ---
 ---
 
-<div class="hero-svg-container absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
-  <svg
-    id="hero-svg"
-    class="w-full h-full opacity-30"
-    viewBox="0 0 1200 800"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    preserveAspectRatio="xMidYMid slice"
-  >
-    <!-- Circuit-style paths -->
-    <path
-      class="circuit-path"
-      d="M0 400 C100 400 150 300 250 300 S400 350 500 250 S650 200 750 300 S900 400 1000 350 S1100 300 1200 400"
-      stroke="url(#gradient1)"
-      stroke-width="2"
-      stroke-linecap="round"
-    />
-    <path
-      class="circuit-path"
-      d="M0 500 C150 500 200 450 300 400 S450 350 550 450 S700 500 800 400 S950 350 1050 450 S1150 500 1200 450"
-      stroke="url(#gradient2)"
-      stroke-width="1.5"
-      stroke-linecap="round"
-    />
-    <path
-      class="circuit-path"
-      d="M0 200 C100 200 200 250 300 200 S450 150 550 200 S700 250 800 200 S950 150 1100 200 L1200 200"
-      stroke="url(#gradient1)"
-      stroke-width="1"
-      stroke-linecap="round"
-    />
-    <path
-      class="circuit-path"
-      d="M0 650 C200 650 250 600 400 600 S550 650 700 600 S850 550 1000 600 S1100 650 1200 620"
-      stroke="url(#gradient2)"
-      stroke-width="1.5"
-      stroke-linecap="round"
-    />
-    <path
-      class="circuit-path"
-      d="M200 0 C200 100 250 150 250 250 S200 350 250 450 S300 550 250 650 S200 750 250 800"
-      stroke="url(#gradient3)"
-      stroke-width="1"
-      stroke-linecap="round"
-    />
-    <path
-      class="circuit-path"
-      d="M900 0 C900 80 950 150 950 250 S900 350 950 450 S1000 550 950 650 S900 750 950 800"
-      stroke="url(#gradient3)"
-      stroke-width="1"
-      stroke-linecap="round"
-    />
-    <path
-      class="circuit-path"
-      d="M600 0 C600 100 550 200 600 300 S650 400 600 500 S550 600 600 700 S650 750 600 800"
-      stroke="url(#gradient1)"
-      stroke-width="1.5"
-      stroke-linecap="round"
-    />
+<div class="hero-icons-container absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
+  <!-- Floating tech icons -->
+  <div class="floating-icon" style="top: 8%; left: 5%; --delay: 0s; --duration: 6s;">
+    <svg viewBox="0 0 48 48" class="w-10 h-10 text-cyan-400/20"><ellipse cx="24" cy="24" rx="20" ry="12" fill="none" stroke="currentColor" stroke-width="2"/><text x="24" y="28" text-anchor="middle" fill="currentColor" font-size="12" font-weight="bold" font-family="monospace">PHP</text></svg>
+  </div>
 
-    <!-- Circuit nodes (dots at intersections) -->
-    <circle class="circuit-node" cx="250" cy="300" r="4" fill="#06b6d4" opacity="0" />
-    <circle class="circuit-node" cx="500" cy="250" r="3" fill="#22d3ee" opacity="0" />
-    <circle class="circuit-node" cx="750" cy="300" r="4" fill="#06b6d4" opacity="0" />
-    <circle class="circuit-node" cx="1000" cy="350" r="3" fill="#22d3ee" opacity="0" />
-    <circle class="circuit-node" cx="300" cy="400" r="3" fill="#06b6d4" opacity="0" />
-    <circle class="circuit-node" cx="550" cy="450" r="4" fill="#22d3ee" opacity="0" />
-    <circle class="circuit-node" cx="800" cy="400" r="3" fill="#06b6d4" opacity="0" />
-    <circle class="circuit-node" cx="600" cy="500" r="4" fill="#06b6d4" opacity="0" />
-    <circle class="circuit-node" cx="250" cy="450" r="3" fill="#22d3ee" opacity="0" />
-    <circle class="circuit-node" cx="950" cy="450" r="3" fill="#22d3ee" opacity="0" />
+  <div class="floating-icon" style="top: 15%; right: 10%; --delay: 1.2s; --duration: 7s;">
+    <svg viewBox="0 0 48 48" class="w-12 h-12 text-blue-400/20"><circle cx="24" cy="24" r="4" fill="currentColor"/><ellipse cx="24" cy="24" rx="18" ry="7" fill="none" stroke="currentColor" stroke-width="1.5"/><ellipse cx="24" cy="24" rx="18" ry="7" fill="none" stroke="currentColor" stroke-width="1.5" transform="rotate(60 24 24)"/><ellipse cx="24" cy="24" rx="18" ry="7" fill="none" stroke="currentColor" stroke-width="1.5" transform="rotate(120 24 24)"/></svg>
+  </div>
 
-    <!-- Gradients -->
-    <defs>
-      <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="0%">
-        <stop offset="0%" stop-color="#06b6d4" stop-opacity="0.3" />
-        <stop offset="50%" stop-color="#22d3ee" stop-opacity="0.8" />
-        <stop offset="100%" stop-color="#338dff" stop-opacity="0.3" />
-      </linearGradient>
-      <linearGradient id="gradient2" x1="0%" y1="0%" x2="100%" y2="0%">
-        <stop offset="0%" stop-color="#338dff" stop-opacity="0.2" />
-        <stop offset="50%" stop-color="#06b6d4" stop-opacity="0.7" />
-        <stop offset="100%" stop-color="#22d3ee" stop-opacity="0.2" />
-      </linearGradient>
-      <linearGradient id="gradient3" x1="0%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%" stop-color="#06b6d4" stop-opacity="0.1" />
-        <stop offset="50%" stop-color="#22d3ee" stop-opacity="0.6" />
-        <stop offset="100%" stop-color="#338dff" stop-opacity="0.1" />
-      </linearGradient>
-      <radialGradient id="mouseGlow">
-        <stop offset="0%" stop-color="#06b6d4" stop-opacity="0.15" />
-        <stop offset="100%" stop-color="#06b6d4" stop-opacity="0" />
-      </radialGradient>
-    </defs>
+  <div class="floating-icon" style="top: 60%; left: 8%; --delay: 2.5s; --duration: 8s;">
+    <svg viewBox="0 0 48 48" class="w-9 h-9 text-green-400/20"><path d="M24 6l16 9.2v18.4L24 42 8 33.6V15.2L24 6z" fill="none" stroke="currentColor" stroke-width="2"/><text x="24" y="28" text-anchor="middle" fill="currentColor" font-size="10" font-weight="bold" font-family="monospace">N</text></svg>
+  </div>
 
-    <!-- Mouse-follow glow -->
-    <circle id="mouse-glow" cx="600" cy="400" r="150" fill="url(#mouseGlow)" opacity="0" />
-  </svg>
+  <div class="floating-icon" style="top: 75%; right: 12%; --delay: 0.8s; --duration: 6.5s;">
+    <svg viewBox="0 0 48 48" class="w-10 h-10 text-yellow-400/20"><rect x="8" y="8" width="32" height="32" rx="4" fill="none" stroke="currentColor" stroke-width="2"/><text x="24" y="30" text-anchor="middle" fill="currentColor" font-size="14" font-weight="bold" font-family="monospace">JS</text></svg>
+  </div>
+
+  <div class="floating-icon" style="top: 25%; left: 18%; --delay: 3.2s; --duration: 7.5s;">
+    <svg viewBox="0 0 48 48" class="w-8 h-8 text-purple-400/20"><ellipse cx="24" cy="14" rx="14" ry="6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 14v20c0 3.3 6.3 6 14 6s14-2.7 14-6V14" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 24c0 3.3 6.3 6 14 6s14-2.7 14-6" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+  </div>
+
+  <div class="floating-icon" style="top: 40%; right: 5%; --delay: 1.8s; --duration: 6.8s;">
+    <svg viewBox="0 0 48 48" class="w-11 h-11 text-red-400/20"><path d="M12 14l12-6 12 6v18l-12 6-12-6V14z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M24 8v28M12 14l12 6 12-6" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+  </div>
+
+  <!-- Terminal/Code icon -->
+  <div class="floating-icon" style="top: 5%; left: 45%; --delay: 2s; --duration: 7.2s;">
+    <svg viewBox="0 0 48 48" class="w-10 h-10 text-emerald-400/20"><rect x="6" y="10" width="36" height="28" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M14 22l6 4-6 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M24 30h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+  </div>
+
+  <!-- Git branch icon -->
+  <div class="floating-icon" style="top: 70%; left: 25%; --delay: 4s; --duration: 8.5s;">
+    <svg viewBox="0 0 48 48" class="w-9 h-9 text-orange-400/20"><circle cx="18" cy="14" r="3" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="30" cy="20" r="3" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="18" cy="34" r="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M18 17v14M21 14h6c2 0 3 1 3 3" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+  </div>
+
+  <!-- Cloud/Server icon -->
+  <div class="floating-icon" style="top: 50%; left: 42%; --delay: 3.5s; --duration: 9s;">
+    <svg viewBox="0 0 48 48" class="w-8 h-8 text-sky-400/15"><path d="M14 32h20a8 8 0 001-16 10 10 0 00-19 4 7 7 0 00-2 12z" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+  </div>
+
+  <!-- API/Curly braces -->
+  <div class="floating-icon" style="top: 85%; left: 50%; --delay: 1s; --duration: 7s;">
+    <svg viewBox="0 0 48 48" class="w-10 h-10 text-indigo-400/20"><text x="24" y="30" text-anchor="middle" fill="currentColor" font-size="22" font-family="monospace">{}</text></svg>
+  </div>
+
+  <!-- Docker/Container icon -->
+  <div class="floating-icon" style="top: 30%; right: 20%; --delay: 2.8s; --duration: 6.2s;">
+    <svg viewBox="0 0 48 48" class="w-9 h-9 text-blue-300/20"><rect x="10" y="22" width="28" height="14" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><rect x="14" y="25" width="4" height="4" fill="none" stroke="currentColor" stroke-width="1"/><rect x="20" y="25" width="4" height="4" fill="none" stroke="currentColor" stroke-width="1"/><rect x="26" y="25" width="4" height="4" fill="none" stroke="currentColor" stroke-width="1"/><rect x="32" y="25" width="4" height="4" fill="none" stroke="currentColor" stroke-width="1"/><path d="M10 22c0-6 4-9 7-11" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+  </div>
+
+  <!-- Binary -->
+  <div class="floating-icon" style="top: 90%; right: 30%; --delay: 4.5s; --duration: 8s;">
+    <svg viewBox="0 0 48 48" class="w-8 h-8 text-gray-400/15"><text x="24" y="28" text-anchor="middle" fill="currentColor" font-size="11" font-family="monospace">01010</text></svg>
+  </div>
+
+  <!-- Hash/Route icon -->
+  <div class="floating-icon" style="top: 45%; left: 70%; --delay: 0.5s; --duration: 7.8s;">
+    <svg viewBox="0 0 48 48" class="w-8 h-8 text-pink-400/15"><text x="24" y="32" text-anchor="middle" fill="currentColor" font-size="24" font-family="monospace">#</text></svg>
+  </div>
+
+  <!-- TypeScript -->
+  <div class="floating-icon" style="top: 12%; left: 70%; --delay: 3.8s; --duration: 6.5s;">
+    <svg viewBox="0 0 48 48" class="w-9 h-9 text-blue-400/20"><rect x="8" y="8" width="32" height="32" rx="4" fill="none" stroke="currentColor" stroke-width="2"/><text x="24" y="30" text-anchor="middle" fill="currentColor" font-size="14" font-weight="bold" font-family="monospace">TS</text></svg>
+  </div>
+
+  <!-- Lambda/Function icon -->
+  <div class="floating-icon" style="top: 65%; left: 60%; --delay: 2.2s; --duration: 7.3s;">
+    <svg viewBox="0 0 48 48" class="w-8 h-8 text-amber-400/15"><text x="24" y="34" text-anchor="middle" fill="currentColor" font-size="28" font-family="serif" font-style="italic">λ</text></svg>
+  </div>
+
+  <!-- Angle brackets / HTML -->
+  <div class="floating-icon" style="top: 20%; left: 85%; --delay: 1.5s; --duration: 8.2s;">
+    <svg viewBox="0 0 48 48" class="w-9 h-9 text-orange-300/20"><text x="24" y="30" text-anchor="middle" fill="currentColor" font-size="16" font-family="monospace">&lt;/&gt;</text></svg>
+  </div>
+
+  <!-- Infinity/Loop -->
+  <div class="floating-icon" style="top: 80%; left: 80%; --delay: 3s; --duration: 7.6s;">
+    <svg viewBox="0 0 48 48" class="w-9 h-9 text-teal-400/15"><path d="M14 24c0-4 3-7 7-7s7 3 7 7-3 7-7 7-7-3-7-7M27 24c0-4 3-7 7-7s7 3 7 7-3 7-7 7-7-3-7-7" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+  </div>
 </div>
 
 <style>
-  .circuit-path {
-    stroke-dasharray: 1500;
-    stroke-dashoffset: 1500;
-    animation: drawCircuit 3s ease-in-out forwards;
+  .floating-icon {
+    position: absolute;
+    animation: float var(--duration, 7s) ease-in-out infinite;
+    animation-delay: var(--delay, 0s);
+    opacity: 0;
+    animation-fill-mode: backwards;
   }
 
-  .circuit-path:nth-child(2) { animation-delay: 0.3s; }
-  .circuit-path:nth-child(3) { animation-delay: 0.6s; }
-  .circuit-path:nth-child(4) { animation-delay: 0.9s; }
-  .circuit-path:nth-child(5) { animation-delay: 1.2s; }
-  .circuit-path:nth-child(6) { animation-delay: 1.5s; }
-  .circuit-path:nth-child(7) { animation-delay: 1.8s; }
-
-  .circuit-node {
-    animation: pulseNode 2s ease-in-out infinite;
-  }
-
-  .circuit-node:nth-child(8) { animation-delay: 2.0s; }
-  .circuit-node:nth-child(9) { animation-delay: 2.2s; }
-  .circuit-node:nth-child(10) { animation-delay: 2.4s; }
-  .circuit-node:nth-child(11) { animation-delay: 2.6s; }
-  .circuit-node:nth-child(12) { animation-delay: 2.8s; }
-  .circuit-node:nth-child(13) { animation-delay: 3.0s; }
-  .circuit-node:nth-child(14) { animation-delay: 3.2s; }
-  .circuit-node:nth-child(15) { animation-delay: 3.4s; }
-  .circuit-node:nth-child(16) { animation-delay: 3.6s; }
-  .circuit-node:nth-child(17) { animation-delay: 3.8s; }
-
-  @keyframes drawCircuit {
-    to {
-      stroke-dashoffset: 0;
+  @keyframes float {
+    0% {
+      transform: translateY(0px) rotate(0deg);
+      opacity: 1;
+    }
+    25% {
+      transform: translateY(-15px) rotate(3deg);
+    }
+    50% {
+      transform: translateY(-8px) rotate(-2deg);
+      opacity: 0.7;
+    }
+    75% {
+      transform: translateY(-20px) rotate(2deg);
+    }
+    100% {
+      transform: translateY(0px) rotate(0deg);
+      opacity: 1;
     }
   }
 
-  @keyframes pulseNode {
-    0%, 100% { opacity: 0.3; r: 3; }
-    50% { opacity: 1; r: 5; }
+  @media (prefers-reduced-motion: reduce) {
+    .floating-icon {
+      animation: none;
+      opacity: 0.5;
+    }
   }
 </style>
 
 <script>
-  const svg = document.getElementById('hero-svg');
-  const mouseGlow = document.getElementById('mouse-glow');
+  const container = document.querySelector('.hero-icons-container');
+  const icons = document.querySelectorAll('.floating-icon');
 
-  if (svg && mouseGlow) {
-    const heroContainer = svg.closest('.hero-svg-container');
+  container?.parentElement?.addEventListener('mousemove', (e) => {
+    const rect = container.getBoundingClientRect();
+    const mouseX = (e.clientX - rect.left) / rect.width - 0.5;
+    const mouseY = (e.clientY - rect.top) / rect.height - 0.5;
 
-    heroContainer?.parentElement?.addEventListener('mousemove', (e) => {
-      const rect = svg.getBoundingClientRect();
-      const x = ((e.clientX - rect.left) / rect.width) * 1200;
-      const y = ((e.clientY - rect.top) / rect.height) * 800;
-
-      mouseGlow.setAttribute('cx', String(x));
-      mouseGlow.setAttribute('cy', String(y));
-      mouseGlow.setAttribute('opacity', '1');
-
-      const paths = svg.querySelectorAll('.circuit-path');
-      paths.forEach((path) => {
-        const pathEl = path as SVGPathElement;
-        const pathLength = pathEl.getTotalLength();
-        const point = pathEl.getPointAtLength(pathLength * (x / 1200));
-        const dist = Math.hypot(point.x - x, point.y - y);
-        const glow = Math.max(0, 1 - dist / 200);
-        pathEl.style.filter = `drop-shadow(0 0 ${glow * 8}px #06b6d4)`;
-        pathEl.style.strokeWidth = String(parseFloat(pathEl.getAttribute('stroke-width') || '1') + glow * 2);
-      });
+    icons.forEach((icon, i) => {
+      const depth = 0.5 + (i % 3) * 0.3;
+      const moveX = mouseX * 30 * depth;
+      const moveY = mouseY * 20 * depth;
+      (icon as HTMLElement).style.transform = `translate(${moveX}px, ${moveY}px)`;
     });
+  });
 
-    heroContainer?.parentElement?.addEventListener('mouseleave', () => {
-      mouseGlow.setAttribute('opacity', '0');
-      const paths = svg.querySelectorAll('.circuit-path');
-      paths.forEach((path) => {
-        const pathEl = path as SVGPathElement;
-        pathEl.style.filter = '';
-        pathEl.style.strokeWidth = '';
-      });
+  container?.parentElement?.addEventListener('mouseleave', () => {
+    icons.forEach((icon) => {
+      (icon as HTMLElement).style.transform = '';
     });
-  }
+  });
 </script>
