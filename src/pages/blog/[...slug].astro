@@ -1,0 +1,94 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+  return posts.map((post) => ({
+    params: { slug: post.slug },
+    props: post,
+  }));
+}
+
+const post = Astro.props;
+const { Content } = await post.render();
+
+const formattedDate = post.data.date.toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+
+const wordsPerMinute = 200;
+const words = post.body.split(/\s+/).length;
+const readingTime = Math.ceil(words / wordsPerMinute);
+---
+
+<BaseLayout
+  title={`${post.data.title} | Dheeraj's Blog`}
+  description={post.data.description}
+  type="article"
+  publishedDate={post.data.date.toISOString()}
+>
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": post.data.title,
+    "description": post.data.description,
+    "datePublished": post.data.date.toISOString(),
+    "author": {
+      "@type": "Person",
+      "name": "Dheeraj",
+      "url": "https://dheeraj097.github.io"
+    }
+  })} />
+
+  <article class="py-20 sm:py-28">
+    <div class="section-container max-w-3xl">
+      <!-- Header -->
+      <header class="mb-10">
+        <a href="/blog" class="inline-flex items-center gap-1 text-sm text-gray-400 hover:text-accent-light transition-colors mb-6">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16l-4-4m0 0l4-4m-4 4h18" />
+          </svg>
+          Back to Blog
+        </a>
+
+        <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-100 mb-4 text-balance">
+          {post.data.title}
+        </h1>
+
+        <div class="flex items-center gap-3 text-sm text-gray-500">
+          <time datetime={post.data.date.toISOString()}>{formattedDate}</time>
+          <span class="w-1 h-1 rounded-full bg-gray-600"></span>
+          <span>{readingTime} min read</span>
+        </div>
+
+        {post.data.tags && (
+          <div class="flex flex-wrap gap-2 mt-4">
+            {post.data.tags.map((tag: string) => (
+              <span class="text-xs px-2 py-1 bg-gray-800 text-accent rounded-md font-mono">
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+      </header>
+
+      <!-- Content -->
+      <div class="prose-custom">
+        <Content />
+      </div>
+
+      <!-- Footer -->
+      <footer class="mt-12 pt-8 border-t border-gray-800">
+        <a href="/blog" class="inline-flex items-center gap-1 text-accent hover:text-accent-light transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16l-4-4m0 0l4-4m-4 4h18" />
+          </svg>
+          Back to all posts
+        </a>
+      </footer>
+    </div>
+  </article>
+</BaseLayout>

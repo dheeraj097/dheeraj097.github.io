@@ -1,0 +1,183 @@
+---
+---
+
+<div class="hero-svg-container absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
+  <svg
+    id="hero-svg"
+    class="w-full h-full opacity-30"
+    viewBox="0 0 1200 800"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    preserveAspectRatio="xMidYMid slice"
+  >
+    <!-- Circuit-style paths -->
+    <path
+      class="circuit-path"
+      d="M0 400 C100 400 150 300 250 300 S400 350 500 250 S650 200 750 300 S900 400 1000 350 S1100 300 1200 400"
+      stroke="url(#gradient1)"
+      stroke-width="2"
+      stroke-linecap="round"
+    />
+    <path
+      class="circuit-path"
+      d="M0 500 C150 500 200 450 300 400 S450 350 550 450 S700 500 800 400 S950 350 1050 450 S1150 500 1200 450"
+      stroke="url(#gradient2)"
+      stroke-width="1.5"
+      stroke-linecap="round"
+    />
+    <path
+      class="circuit-path"
+      d="M0 200 C100 200 200 250 300 200 S450 150 550 200 S700 250 800 200 S950 150 1100 200 L1200 200"
+      stroke="url(#gradient1)"
+      stroke-width="1"
+      stroke-linecap="round"
+    />
+    <path
+      class="circuit-path"
+      d="M0 650 C200 650 250 600 400 600 S550 650 700 600 S850 550 1000 600 S1100 650 1200 620"
+      stroke="url(#gradient2)"
+      stroke-width="1.5"
+      stroke-linecap="round"
+    />
+    <path
+      class="circuit-path"
+      d="M200 0 C200 100 250 150 250 250 S200 350 250 450 S300 550 250 650 S200 750 250 800"
+      stroke="url(#gradient3)"
+      stroke-width="1"
+      stroke-linecap="round"
+    />
+    <path
+      class="circuit-path"
+      d="M900 0 C900 80 950 150 950 250 S900 350 950 450 S1000 550 950 650 S900 750 950 800"
+      stroke="url(#gradient3)"
+      stroke-width="1"
+      stroke-linecap="round"
+    />
+    <path
+      class="circuit-path"
+      d="M600 0 C600 100 550 200 600 300 S650 400 600 500 S550 600 600 700 S650 750 600 800"
+      stroke="url(#gradient1)"
+      stroke-width="1.5"
+      stroke-linecap="round"
+    />
+
+    <!-- Circuit nodes (dots at intersections) -->
+    <circle class="circuit-node" cx="250" cy="300" r="4" fill="#06b6d4" opacity="0" />
+    <circle class="circuit-node" cx="500" cy="250" r="3" fill="#22d3ee" opacity="0" />
+    <circle class="circuit-node" cx="750" cy="300" r="4" fill="#06b6d4" opacity="0" />
+    <circle class="circuit-node" cx="1000" cy="350" r="3" fill="#22d3ee" opacity="0" />
+    <circle class="circuit-node" cx="300" cy="400" r="3" fill="#06b6d4" opacity="0" />
+    <circle class="circuit-node" cx="550" cy="450" r="4" fill="#22d3ee" opacity="0" />
+    <circle class="circuit-node" cx="800" cy="400" r="3" fill="#06b6d4" opacity="0" />
+    <circle class="circuit-node" cx="600" cy="500" r="4" fill="#06b6d4" opacity="0" />
+    <circle class="circuit-node" cx="250" cy="450" r="3" fill="#22d3ee" opacity="0" />
+    <circle class="circuit-node" cx="950" cy="450" r="3" fill="#22d3ee" opacity="0" />
+
+    <!-- Gradients -->
+    <defs>
+      <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#06b6d4" stop-opacity="0.3" />
+        <stop offset="50%" stop-color="#22d3ee" stop-opacity="0.8" />
+        <stop offset="100%" stop-color="#338dff" stop-opacity="0.3" />
+      </linearGradient>
+      <linearGradient id="gradient2" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#338dff" stop-opacity="0.2" />
+        <stop offset="50%" stop-color="#06b6d4" stop-opacity="0.7" />
+        <stop offset="100%" stop-color="#22d3ee" stop-opacity="0.2" />
+      </linearGradient>
+      <linearGradient id="gradient3" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#06b6d4" stop-opacity="0.1" />
+        <stop offset="50%" stop-color="#22d3ee" stop-opacity="0.6" />
+        <stop offset="100%" stop-color="#338dff" stop-opacity="0.1" />
+      </linearGradient>
+      <radialGradient id="mouseGlow">
+        <stop offset="0%" stop-color="#06b6d4" stop-opacity="0.15" />
+        <stop offset="100%" stop-color="#06b6d4" stop-opacity="0" />
+      </radialGradient>
+    </defs>
+
+    <!-- Mouse-follow glow -->
+    <circle id="mouse-glow" cx="600" cy="400" r="150" fill="url(#mouseGlow)" opacity="0" />
+  </svg>
+</div>
+
+<style>
+  .circuit-path {
+    stroke-dasharray: 1500;
+    stroke-dashoffset: 1500;
+    animation: drawCircuit 3s ease-in-out forwards;
+  }
+
+  .circuit-path:nth-child(2) { animation-delay: 0.3s; }
+  .circuit-path:nth-child(3) { animation-delay: 0.6s; }
+  .circuit-path:nth-child(4) { animation-delay: 0.9s; }
+  .circuit-path:nth-child(5) { animation-delay: 1.2s; }
+  .circuit-path:nth-child(6) { animation-delay: 1.5s; }
+  .circuit-path:nth-child(7) { animation-delay: 1.8s; }
+
+  .circuit-node {
+    animation: pulseNode 2s ease-in-out infinite;
+  }
+
+  .circuit-node:nth-child(8) { animation-delay: 2.0s; }
+  .circuit-node:nth-child(9) { animation-delay: 2.2s; }
+  .circuit-node:nth-child(10) { animation-delay: 2.4s; }
+  .circuit-node:nth-child(11) { animation-delay: 2.6s; }
+  .circuit-node:nth-child(12) { animation-delay: 2.8s; }
+  .circuit-node:nth-child(13) { animation-delay: 3.0s; }
+  .circuit-node:nth-child(14) { animation-delay: 3.2s; }
+  .circuit-node:nth-child(15) { animation-delay: 3.4s; }
+  .circuit-node:nth-child(16) { animation-delay: 3.6s; }
+  .circuit-node:nth-child(17) { animation-delay: 3.8s; }
+
+  @keyframes drawCircuit {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  @keyframes pulseNode {
+    0%, 100% { opacity: 0.3; r: 3; }
+    50% { opacity: 1; r: 5; }
+  }
+</style>
+
+<script>
+  const svg = document.getElementById('hero-svg');
+  const mouseGlow = document.getElementById('mouse-glow');
+
+  if (svg && mouseGlow) {
+    const heroContainer = svg.closest('.hero-svg-container');
+
+    heroContainer?.parentElement?.addEventListener('mousemove', (e) => {
+      const rect = svg.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 1200;
+      const y = ((e.clientY - rect.top) / rect.height) * 800;
+
+      mouseGlow.setAttribute('cx', String(x));
+      mouseGlow.setAttribute('cy', String(y));
+      mouseGlow.setAttribute('opacity', '1');
+
+      const paths = svg.querySelectorAll('.circuit-path');
+      paths.forEach((path) => {
+        const pathEl = path as SVGPathElement;
+        const pathLength = pathEl.getTotalLength();
+        const point = pathEl.getPointAtLength(pathLength * (x / 1200));
+        const dist = Math.hypot(point.x - x, point.y - y);
+        const glow = Math.max(0, 1 - dist / 200);
+        pathEl.style.filter = `drop-shadow(0 0 ${glow * 8}px #06b6d4)`;
+        pathEl.style.strokeWidth = String(parseFloat(pathEl.getAttribute('stroke-width') || '1') + glow * 2);
+      });
+    });
+
+    heroContainer?.parentElement?.addEventListener('mouseleave', () => {
+      mouseGlow.setAttribute('opacity', '0');
+      const paths = svg.querySelectorAll('.circuit-path');
+      paths.forEach((path) => {
+        const pathEl = path as SVGPathElement;
+        pathEl.style.filter = '';
+        pathEl.style.strokeWidth = '';
+      });
+    });
+  }
+</script>
