@@ -1,0 +1,51 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import BlogCard from '../../components/BlogCard.astro';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('blog'))
+  .filter((post) => !post.data.draft)
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+function getReadingTime(content: string): string {
+  const wordsPerMinute = 200;
+  const words = content.split(/\s+/).length;
+  const minutes = Math.ceil(words / wordsPerMinute);
+  return `${minutes} min read`;
+}
+---
+
+<BaseLayout
+  title="Blog | Dheeraj - Fullstack Developer"
+  description="Technical articles about PHP, Laravel, Node.js, React, system design, and backend development best practices."
+>
+  <section class="py-20 sm:py-28">
+    <div class="section-container">
+      <div class="text-center mb-12">
+        <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
+          <span class="gradient-text">Blog</span>
+        </h1>
+        <p class="text-gray-400 max-w-2xl mx-auto">
+          Sharing insights from 10+ years of building production systems. Topics include backend architecture,
+          PHP/Laravel best practices, and fullstack development.
+        </p>
+      </div>
+
+      {posts.length === 0 ? (
+        <p class="text-center text-gray-500">No posts yet. Check back soon!</p>
+      ) : (
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          {posts.map((post) => (
+            <BlogCard
+              title={post.data.title}
+              description={post.data.description}
+              date={post.data.date.toISOString()}
+              slug={post.slug}
+              readingTime={getReadingTime(post.body)}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  </section>
+</BaseLayout>
