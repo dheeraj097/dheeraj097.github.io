@@ -16,7 +16,6 @@ The biggest mistake I see in Laravel projects is treating the framework as the a
 Instead of stuffing business logic into controllers or models, introduce a service layer:
 
 ```php
-// app/Services/OrderService.php
 class OrderService
 {
     public function __construct(
@@ -111,7 +110,6 @@ I use a three-layer approach:
 The hardest problem in computer science, right? Here's my approach:
 
 ```php
-// Event-driven cache invalidation
 class ProductUpdated
 {
     public function __construct(public Product $product) {}
@@ -138,7 +136,6 @@ Tag-based caching with Redis makes group invalidation manageable.
 The number one performance issue I encounter in Laravel apps: missing or incorrect indexes.
 
 ```php
-// Migration with thoughtful indexing
 Schema::create('orders', function (Blueprint $table) {
     $table->id();
     $table->foreignId('user_id')->constrained();
@@ -146,9 +143,8 @@ Schema::create('orders', function (Blueprint $table) {
     $table->decimal('total', 10, 2);
     $table->timestamps();
 
-    // Composite index for common query patterns
     $table->index(['user_id', 'status', 'created_at']);
-    $table->index(['status', 'created_at']); // Admin dashboard queries
+    $table->index(['status', 'created_at']);
 });
 ```
 
@@ -180,15 +176,12 @@ For read-heavy applications, configure read/write splitting:
     'write' => [
         'host' => [env('DB_WRITE_HOST')],
     ],
-    // ... rest of config
 ],
 ```
 
 ## Horizontal Scaling Considerations
 
 When you're ready to move beyond a single server:
-
-### Stateless Application Servers
 
 - Store sessions in Redis, not files
 - Use S3 or similar for file uploads (never local disk)
@@ -209,16 +202,6 @@ Route::get('/health', function () {
 });
 ```
 
-## Monitoring and Observability
-
-You can't optimize what you can't measure. My essential monitoring stack:
-
-- **Laravel Telescope** in development
-- **Application-level metrics** — response times, queue depths, cache hit rates
-- **Database slow query log** — anything over 100ms gets flagged
-- **Error tracking** (Sentry/Bugsnag) with proper context
-- **Custom dashboards** for business metrics
-
 ## Key Takeaways
 
 1. **Architecture first** — invest time in clean separation of concerns
@@ -228,6 +211,4 @@ You can't optimize what you can't measure. My essential monitoring stack:
 5. **Monitor everything** — you can't fix what you can't see
 6. **Scale horizontally** — design for statelessness from the start
 
-These patterns aren't theoretical — they've been battle-tested across dozens of production applications serving real users at scale. Start applying them incrementally, measure the impact, and iterate.
-
-The best architecture is one that evolves with your application's needs while maintaining the clarity that lets your team move fast with confidence.
+These patterns aren't theoretical — they've been battle-tested across dozens of production applications serving real users at scale.

@@ -1,0 +1,35 @@
+export const siteConfig = {
+  name: "Dheeraj Dagar",
+  shortName: "Dheeraj Dagar",
+  role: "Full Stack Developer",
+  title: "Dheeraj Dagar — Full Stack Developer",
+  tagline:
+    "Full Stack Developer with 10+ years building fast, scalable, and accessible web applications.",
+  description:
+    "Dheeraj Dagar is a full stack web developer with over 10 years of experience designing and building performant, SEO-friendly web applications using React, Next.js, Node.js, and TypeScript.",
+  url: "https://dheeraj097.github.io",
+  locale: "en_US",
+  email: "techwithdagar@gmail.com",
+  location: "India",
+  yearsOfExperience: 10,
+  keywords: [
+    "Dheeraj Dagar",
+    "Full Stack Developer",
+    "Web Developer",
+    "React Developer",
+    "Next.js Developer",
+    "Node.js Developer",
+    "TypeScript",
+    "JavaScript",
+    "Frontend Engineer",
+    "Backend Engineer",
+    "Software Engineer Portfolio",
+  ],
+  social: {
+    github: "https://github.com/dheeraj097",
+    linkedin: "https://www.linkedin.com/in/dheeraj-dagar",
+    twitter: "https://twitter.com/techwithdagar",
+    email: "mailto:techwithdagar@gmail.com",
+  },
+  twitterHandle: "@techwithdagar",
+} as const;

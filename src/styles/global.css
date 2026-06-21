@@ -2,109 +2,56 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --background: 255 255 255;
+  --foreground: 15 23 42;
+}
+
+.dark {
+  --background: 2 6 23;
+  --foreground: 226 232 240;
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
   }
 
   body {
-    @apply bg-primary-950 text-gray-100 font-sans;
+    background-color: rgb(var(--background));
+    color: rgb(var(--foreground));
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
 
   ::selection {
-    @apply bg-accent/30 text-white;
+    background-color: rgb(50 125 255 / 0.25);
   }
 }
 
 @layer components {
-  .section-container {
-    @apply max-w-6xl mx-auto px-4 sm:px-6 lg:px-8;
+  .container-section {
+    @apply mx-auto w-full max-w-6xl px-5 sm:px-8;
   }
 
-  .gradient-text {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-accent-light to-primary-400;
+  .section-heading {
+    @apply text-3xl font-bold tracking-tight sm:text-4xl;
   }
 
-  .card-hover {
-    @apply transition-all duration-300 ease-out;
-  }
-
-  .card-hover:hover {
-    @apply -translate-y-1 shadow-lg shadow-accent/10;
-  }
-
-  .prose-custom h1,
-  .prose-custom h2,
-  .prose-custom h3 {
-    @apply text-gray-100 font-bold;
-  }
-
-  .prose-custom h1 {
-    @apply text-3xl sm:text-4xl mt-8 mb-4;
-  }
-
-  .prose-custom h2 {
-    @apply text-2xl sm:text-3xl mt-8 mb-3;
-  }
-
-  .prose-custom h3 {
-    @apply text-xl sm:text-2xl mt-6 mb-2;
-  }
-
-  .prose-custom p {
-    @apply text-gray-300 leading-relaxed mb-4;
-  }
-
-  .prose-custom a {
-    @apply text-accent hover:text-accent-light underline underline-offset-2 transition-colors;
-  }
-
-  .prose-custom ul,
-  .prose-custom ol {
-    @apply text-gray-300 mb-4 pl-6;
-  }
-
-  .prose-custom ul {
-    @apply list-disc;
-  }
-
-  .prose-custom ol {
-    @apply list-decimal;
-  }
-
-  .prose-custom li {
-    @apply mb-1;
-  }
-
-  .prose-custom code {
-    @apply bg-gray-800 text-accent-light px-1.5 py-0.5 rounded text-sm font-mono;
-  }
-
-  .prose-custom pre {
-    @apply bg-gray-900 border border-gray-800 rounded-lg p-4 mb-4 overflow-x-auto;
-  }
-
-  .prose-custom pre code {
-    @apply bg-transparent p-0 text-gray-200;
-  }
-
-  .prose-custom blockquote {
-    @apply border-l-4 border-accent pl-4 italic text-gray-400 my-4;
-  }
-
-  .prose-custom img {
-    @apply rounded-lg my-6;
-  }
-
-  .prose-custom hr {
-    @apply border-gray-800 my-8;
+  .card {
+    @apply rounded-2xl border border-slate-200/70 bg-white/70 p-6 shadow-sm backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:shadow-lg dark:border-white/10 dark:bg-white/5;
   }
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
   }
 }

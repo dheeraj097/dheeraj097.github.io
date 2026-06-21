@@ -1,0 +1,56 @@
+---
+import { siteConfig } from '../lib/site';
+
+const highlights = [
+  'Full stack expertise across the modern web',
+  'Performance & SEO focused by default',
+  'Accessible, inclusive interfaces',
+  'Clear communication & collaboration',
+];
+---
+
+<section id="about" class="scroll-mt-20 py-16 sm:py-24">
+  <div class="container-section">
+    <div class="mb-12 max-w-2xl">
+      <p class="mb-3 text-sm font-semibold uppercase tracking-widest text-brand-600 dark:text-brand-400">About me</p>
+      <h2 class="section-heading">Engineering reliable products, end to end</h2>
+    </div>
+
+    <div class="grid gap-10 lg:grid-cols-3">
+      <div class="space-y-5 text-lg leading-relaxed text-slate-600 lg:col-span-2 dark:text-slate-300">
+        <p>
+          I'm {siteConfig.name}, a full stack developer with over
+          <strong class="text-slate-900 dark:text-white">{siteConfig.yearsOfExperience} years</strong>
+          of hands-on experience building for the web. Over the past decade I've shipped everything from marketing sites and dashboards to large-scale SaaS platforms and developer tooling.
+        </p>
+        <p>
+          I care deeply about the details that make software great: performance, accessibility, clean architecture, and a delightful user experience. I'm equally comfortable crafting polished React interfaces and designing resilient backend services and APIs.
+        </p>
+        <p>
+          I'm a strong believer in the JavaScript/TypeScript and PHP ecosystems, love contributing to open source, and enjoy mentoring other developers to help teams move faster with confidence.
+        </p>
+      </div>
+
+      <ul class="space-y-4">
+        {highlights.map((point) => (
+          <li class="flex items-start gap-3 rounded-xl border border-slate-200/70 bg-white/60 p-4 dark:border-white/10 dark:bg-white/5">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="mt-0.5 h-5 w-5 flex-none text-brand-600 dark:text-brand-400"
+              aria-hidden="true"
+            >
+              <path d="m5 12 5 5L20 7" />
+            </svg>
+            <span class="text-slate-700 dark:text-slate-200">{point}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</section>
