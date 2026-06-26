@@ -1,0 +1,630 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { siteConfig } from '../lib/site';
+import { experiences, skillGroups, stats } from '../lib/content';
+
+// Oldest role first → the climb levels up toward the present.
+const camps = [...experiences].reverse();
+
+const counterStats = stats.map((s) => {
+  const num = parseInt(s.value.replace(/[^0-9]/g, ''), 10);
+  const isNum = !Number.isNaN(num) && /[0-9]/.test(s.value);
+  const suffix = s.value.replace(/[0-9]/g, '');
+  return { ...s, num, isNum, suffix };
+});
+
+const gear = skillGroups.flatMap((g) => g.skills);
+
+// Threshold (0..1) along the pinned scroll at which each camp is reached.
+const campThresholds = [0.2, 0.46, 0.72];
+const summitThreshold = 0.96;
+
+// Floating leaves / nature glyphs for the background.
+const leafIcons: string[] = [
+  '<path d="M12 21c6-2 8-7 8-13 0-1.5-.2-3-.5-4.5C15 4 8 6 6 11c-1.5 3.7-1 7 0 10z"/><path d="M12 21C9 16 8 11 9 6"/>', // leaf
+  '<path d="m12 2 2.4 5.6L20 8l-4 4 1 6-5-3-5 3 1-6-4-4 5.6-.4z"/>', // spark/star
+  '<path d="M12 2 8 9h3v5H8l4 8 4-8h-3V9h3z"/>', // pine tree
+  '<path d="M3 12h4l2-7 4 14 2-7h6"/>', // trail line / mountain pulse
+  '<circle cx="12" cy="12" r="5"/><path d="M12 1v3M12 20v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M1 12h3M20 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/>', // sun
+];
+type Leaf = { i: number; cls: string; size: number; op: number; speed: number; dur: number; delay: number };
+const leaves: Leaf[] = [
+  { i: 0, cls: 'left-[7%]  top-[14%]', size: 40, op: 0.16, speed: 0.07,  dur: 11, delay: 0 },
+  { i: 2, cls: 'left-[86%] top-[20%]', size: 52, op: 0.12, speed: -0.05, dur: 13, delay: 1 },
+  { i: 1, cls: 'left-[78%] top-[52%]', size: 30, op: 0.18, speed: 0.1,   dur: 9,  delay: 0.5 },
+  { i: 0, cls: 'left-[12%] top-[60%]', size: 34, op: 0.14, speed: -0.08, dur: 12, delay: 1.8 },
+  { i: 3, cls: 'left-[60%] top-[8%]',  size: 44, op: 0.1,  speed: 0.06,  dur: 14, delay: 0.3 },
+  { i: 2, cls: 'left-[20%] top-[82%]', size: 38, op: 0.13, speed: -0.06, dur: 10, delay: 2.2 },
+  { i: 1, cls: 'left-[92%] top-[74%]', size: 26, op: 0.18, speed: 0.09,  dur: 8,  delay: 1.2 },
+];
+---
+
+<BaseLayout
+  title="Dheeraj Dagar — Trail Mode"
+  description="A hiker's expedition through a decade of full stack engineering — scroll the mountain to climb the career trail."
+>
+  <script is:inline>document.documentElement.classList.add('v3-js');</script>
+
+  <div class="v3-root">
+    <div class="v3-progress-track" aria-hidden="true"><div id="v3-progress" class="v3-progress-bar"></div></div>
+
+    <div class="v3-topscrim" aria-hidden="true"></div>
+    <div class="v3-topbar">
+      <a href="/" class="v3-back" aria-label="Back to main site">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+        Main site
+      </a>
+      <span class="v3-badge"><span class="v3-badge-dot"></span> v3 · trail mode</span>
+    </div>
+
+    <!-- Floating nature glyphs -->
+    <div class="v3-leaves" aria-hidden="true">
+      {leaves.map((l) => (
+        <span class={`v3-leaf ${l.cls}`} data-speed={l.speed} style={`--size:${l.size}px; --op:${l.op}; --dur:${l.dur}s; --delay:${l.delay}s;`}>
+          <span class="v3-leaf-inner">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" set:html={leafIcons[l.i]} />
+          </span>
+        </span>
+      ))}
+    </div>
+
+    <main id="main">
+      <!-- ===================== HERO ===================== -->
+      <section id="v3-hero" class="v3-hero">
+        <!-- layered parallax scenery -->
+        <div class="v3-scene" aria-hidden="true">
+          <div class="v3-sun" data-depth="0.06"></div>
+          <svg class="v3-hills v3-hills-far"  data-depth="0.04" viewBox="0 0 1440 420" preserveAspectRatio="none"><path d="M0 320 L180 200 L360 290 L560 150 L760 280 L980 170 L1180 270 L1440 190 L1440 420 L0 420 Z"/></svg>
+          <svg class="v3-hills v3-hills-mid"  data-depth="0.1"  viewBox="0 0 1440 420" preserveAspectRatio="none"><path d="M0 360 L220 250 L430 340 L640 230 L880 350 L1100 250 L1320 350 L1440 300 L1440 420 L0 420 Z"/></svg>
+          <div class="v3-fog" data-depth="0.16"></div>
+          <svg class="v3-trees" data-depth="0.22" viewBox="0 0 1440 240" preserveAspectRatio="none">
+            <g fill="currentColor">
+              {Array.from({ length: 26 }).map((_, i) => {
+                const x = i * 58 + (i % 2 ? 18 : 0);
+                const h = 120 + (i % 3) * 38 + (i % 2) * 16;
+                return (<path d={`M${x} 240 L${x - 26} 240 L${x} ${240 - h} L${x + 26} 240 Z`} />);
+              })}
+            </g>
+          </svg>
+        </div>
+
+        <div class="v3-hero-grid">
+          <div class="v3-hero-copy">
+            <p class="v3-eyebrow v3-reveal">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="m8 3 4 8 5-5 5 14H2L8 3z"/></svg>
+              {siteConfig.role} · trailhead
+            </p>
+            <h1 class="v3-title v3-reveal">
+              <span class="v3-title-line">I build the web</span>
+              <span class="v3-title-line">like it&apos;s an</span>
+              <span class="v3-title-script">adventure.</span>
+            </h1>
+            <p class="v3-lede v3-reveal">
+              Hey, I&apos;m <strong>{siteConfig.name}</strong> — a full stack developer who treats every
+              project like a summit to reach. {siteConfig.yearsOfExperience}+ years on the trail,
+              shipping fast, accessible products. Lace up and scroll to climb my career.
+            </p>
+            <div class="v3-cta-row v3-reveal">
+              <a href="#expedition" class="v3-btn v3-btn-primary">
+                Start the climb
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>
+              </a>
+              <a href={siteConfig.social.email} class="v3-btn v3-btn-ghost">Say hello</a>
+            </div>
+          </div>
+
+          <div class="v3-hero-avatar v3-reveal">
+            <div class="v3-avatar-ring" data-depth="0.05">
+              <span class="v3-avatar-orbit"></span>
+              <img src="/hiker-avatar.png" alt="Illustrated avatar of Dheeraj wearing a travel cap and sunglasses in a forest" width="320" height="320" />
+            </div>
+            <div class="v3-avatar-chip v3-chip-a"><strong>10+ yrs</strong><span>on the trail</span></div>
+            <div class="v3-avatar-chip v3-chip-b"><strong>∞</strong><span>summits chased</span></div>
+          </div>
+        </div>
+
+        <a href="#expedition" class="v3-scrollhint v3-reveal" aria-label="Scroll to the expedition">
+          <span>scroll to climb</span>
+          <span class="v3-mouse"><span class="v3-wheel"></span></span>
+        </a>
+      </section>
+
+      <!-- ===================== EXPEDITION (pinned mountain) ===================== -->
+      <section id="expedition" class="v3-expedition" aria-label="Career expedition">
+        <div class="v3-stage">
+          <div class="v3-sky" aria-hidden="true"></div>
+          <div class="v3-stage-head">
+            <p class="v3-kicker">The Expedition</p>
+            <h2 class="v3-h2">Climb my career, one camp at a time</h2>
+          </div>
+
+          <!-- elevation HUD -->
+          <div class="v3-hud" aria-hidden="true">
+            <span class="v3-hud-label">Elevation</span>
+            <div class="v3-gauge"><div id="v3-gauge-fill" class="v3-gauge-fill"></div></div>
+            <span id="v3-elev" class="v3-elev">0 m</span>
+          </div>
+
+          <!-- the mountain + trail -->
+          <svg id="v3-mountain" class="v3-mountain" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+            <defs>
+              <linearGradient id="v3peak" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#1f6f4a"/>
+                <stop offset="1" stop-color="#0a3a26"/>
+              </linearGradient>
+              <linearGradient id="v3peakBack" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#2c7d57"/>
+                <stop offset="1" stop-color="#14543a"/>
+              </linearGradient>
+              <linearGradient id="v3trailGrad" x1="0" y1="1" x2="0" y2="0">
+                <stop offset="0" stop-color="#a3e635"/>
+                <stop offset="0.5" stop-color="#fcd34d"/>
+                <stop offset="1" stop-color="#fb923c"/>
+              </linearGradient>
+              <clipPath id="hikerClip"><circle cx="0" cy="0" r="26"/></clipPath>
+            </defs>
+
+            <!-- back ridge -->
+            <path fill="url(#v3peakBack)" opacity="0.85" d="M-40 1000 L160 520 L320 660 L470 360 L520 430 L640 300 L760 540 L900 380 L1040 1000 Z"/>
+            <!-- main peak -->
+            <path fill="url(#v3peak)" d="M-40 1000 L250 600 L370 700 L500 150 L640 560 L760 470 L1040 1000 Z"/>
+            <!-- snow cap -->
+            <path fill="#eafff5" opacity="0.92" d="M500 150 L455 330 L495 300 L540 360 L575 305 L500 150 Z"/>
+
+            <!-- faint full trail -->
+            <path class="v3-trail-track"
+              d="M120 940 Q500 900 860 868 Q946 840 814 760 Q470 740 196 698 Q104 660 262 580 Q520 560 760 540 Q852 500 700 432 Q520 410 360 380 Q472 300 500 168" />
+            <!-- drawn trail -->
+            <path id="v3-trail" class="v3-trail-draw" pathLength="1" stroke="url(#v3trailGrad)"
+              d="M120 940 Q500 900 860 868 Q946 840 814 760 Q470 740 196 698 Q104 660 262 580 Q520 560 760 540 Q852 500 700 432 Q520 410 360 380 Q472 300 500 168" />
+
+            <!-- summit flag -->
+            <g class="v3-summit-flag" transform="translate(500 168)">
+              <line x1="0" y1="0" x2="0" y2="-46" stroke="#0a3a26" stroke-width="4" stroke-linecap="round"/>
+              <path d="M0 -46 L34 -38 L0 -26 Z" fill="#fb923c"/>
+            </g>
+
+            <!-- hiker marker -->
+            <g id="v3-hiker" class="v3-hiker" transform="translate(120 940)">
+              <circle r="32" fill="#0a3a26" />
+              <circle r="30" fill="none" stroke="#a3e635" stroke-width="3" />
+              <image href="/hiker-avatar-sm.png" x="-26" y="-26" width="52" height="52" clip-path="url(#hikerClip)" />
+            </g>
+          </svg>
+
+          <!-- camp cards overlay (positioned along trail by JS) -->
+          <div id="v3-camps" class="v3-camps">
+            {camps.map((c, idx) => (
+              <article class="v3-camp" data-t={campThresholds[idx]} data-index={idx}>
+                <div class="v3-camp-node" aria-hidden="true"><span></span></div>
+                <div class="v3-camp-card">
+                  <div class="v3-camp-top">
+                    <span class="v3-camp-tag">Camp {String(idx + 1).padStart(2, '0')}</span>
+                    <span class="v3-camp-period">{c.period}</span>
+                  </div>
+                  <h3 class="v3-camp-role">{c.role}</h3>
+                  <p class="v3-camp-company">{c.company}</p>
+                  <p class="v3-camp-desc">{c.description}</p>
+                  <p class="v3-camp-high">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="m5 12 5 5L20 7"/></svg>
+                    {c.highlights[0]}
+                  </p>
+                </div>
+              </article>
+            ))}
+
+            <article class="v3-camp v3-camp-summit" data-t={summitThreshold} data-index={camps.length}>
+              <div class="v3-camp-node v3-node-summit" aria-hidden="true"><span></span></div>
+              <div class="v3-camp-card">
+                <span class="v3-camp-tag v3-tag-summit">Summit · Now</span>
+                <h3 class="v3-camp-role">Still climbing</h3>
+                <p class="v3-camp-desc">Every summit reveals a higher one. Currently mapping the next ascent — let&apos;s rope up.</p>
+                <a href={siteConfig.social.email} class="v3-btn v3-btn-primary v3-btn-sm">Plan an expedition</a>
+              </div>
+            </article>
+          </div>
+
+          <div class="v3-stage-hint" aria-hidden="true">keep scrolling ↓</div>
+        </div>
+      </section>
+
+      <!-- ===================== GEAR / SKILLS ===================== -->
+      <section class="v3-gear-section">
+        <div class="v3-shell">
+          <header class="v3-section-head v3-reveal">
+            <p class="v3-kicker">The Pack</p>
+            <h2 class="v3-h2">Gear I carry on every trek</h2>
+            <p class="v3-sub">A field-tested kit spanning the full stack — from trailhead UI to backend basecamp.</p>
+          </header>
+          <ul class="v3-gear-grid">
+            {gear.map((g, i) => (
+              <li class="v3-gear-item v3-reveal" style={`transition-delay:${(i % 8) * 40}ms`}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="m8 3 4 8 5-5 5 14H2L8 3z"/></svg>
+                {g}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      <!-- ===================== TRAIL STATS ===================== -->
+      <section class="v3-stats-section">
+        <div class="v3-shell">
+          <div class="v3-stats v3-reveal">
+            {counterStats.map((s) => (
+              <div class="v3-stat">
+                <span class="v3-stat-num">
+                  {s.isNum
+                    ? <span class="v3-counter" data-target={s.num} data-suffix={s.suffix}>0{s.suffix}</span>
+                    : <span>{s.value}</span>}
+                </span>
+                <span class="v3-stat-label">{s.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== CTA ===================== -->
+      <section class="v3-cta-section">
+        <div class="v3-shell">
+          <div class="v3-cta-panel v3-reveal">
+            <div class="v3-cta-trees" aria-hidden="true">
+              <svg viewBox="0 0 1200 120" preserveAspectRatio="none"><g fill="currentColor">
+                {Array.from({ length: 30 }).map((_, i) => {
+                  const x = i * 42 + 10; const h = 60 + (i % 3) * 24;
+                  return (<path d={`M${x} 120 L${x - 18} 120 L${x} ${120 - h} L${x + 18} 120 Z`} />);
+                })}
+              </g></svg>
+            </div>
+            <p class="v3-kicker">Next expedition</p>
+            <h2 class="v3-cta-title">Let&apos;s find the next summit together.</h2>
+            <p class="v3-cta-sub">Available for freelance and consulting treks. Bring the destination — I&apos;ll help chart the route.</p>
+            <div class="v3-cta-actions">
+              <a href={siteConfig.social.email} class="v3-btn v3-btn-primary">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                {siteConfig.email}
+              </a>
+              <div class="v3-socials">
+                <a href={siteConfig.social.github} target="_blank" rel="noopener noreferrer" aria-label="GitHub" class="v3-social"><svg viewBox="0 0 24 24" fill="currentColor" class="h-5 w-5"><path d="M12 .5a12 12 0 0 0-3.79 23.4c.6.11.82-.26.82-.58v-2c-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.81 1.3 3.5.99.11-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.29-1.55 3.3-1.23 3.3-1.23.66 1.66.25 2.88.12 3.18.77.84 1.23 1.91 1.23 3.22 0 4.61-2.8 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58A12 12 0 0 0 12 .5z"/></svg></a>
+                <a href={siteConfig.social.linkedin} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" class="v3-social"><svg viewBox="0 0 24 24" fill="currentColor" class="h-5 w-5"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.03-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.55V9h3.57v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"/></svg></a>
+                <a href={siteConfig.social.twitter} target="_blank" rel="noopener noreferrer" aria-label="Twitter / X" class="v3-social"><svg viewBox="0 0 24 24" fill="currentColor" class="h-5 w-5"><path d="M18.9 1.15h3.68l-8.04 9.19L24 22.85h-7.41l-5.8-7.58-6.64 7.58H.46l8.6-9.83L0 1.15h7.59l5.24 6.93 6.07-6.93zm-1.29 19.5h2.04L6.49 3.24H4.3l13.31 17.41z"/></svg></a>
+              </div>
+            </div>
+            <p class="v3-foot">© {new Date().getFullYear()} {siteConfig.name} · happy trails</p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</BaseLayout>
+
+<style is:global>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Caveat:wght@600;700&display=swap');
+
+  html.v3-js .v3-reveal { opacity: 0; transform: translateY(26px); filter: blur(5px); }
+  html.v3-js .v3-reveal.in {
+    opacity: 1; transform: none; filter: none;
+    transition: opacity .8s cubic-bezier(.2,.7,.2,1), transform .8s cubic-bezier(.2,.7,.2,1), filter .8s cubic-bezier(.2,.7,.2,1);
+  }
+
+  body { background: #06140d; }
+
+  .v3-root {
+    --ink: #eafff5; --moss: #34d399; --lime: #a3e635; --amber: #fcd34d;
+    position: relative; min-height: 100vh; color: var(--ink);
+    font-family: 'Inter', system-ui, sans-serif; overflow-x: clip;
+    background:
+      radial-gradient(1100px 640px at 50% -8%, rgba(52,211,153,.16), transparent 60%),
+      radial-gradient(900px 560px at 92% 24%, rgba(163,230,53,.08), transparent 60%),
+      linear-gradient(180deg, #06140d 0%, #07180f 42%, #051009 100%);
+  }
+
+  /* progress + topbar */
+  .v3-progress-track { position: fixed; inset: 0 0 auto 0; height: 3px; z-index: 60; background: rgba(255,255,255,.06); }
+  .v3-progress-bar { height: 100%; width: 100%; transform: scaleX(0); transform-origin: left; background: linear-gradient(90deg,#a3e635,#34d399,#fcd34d); box-shadow: 0 0 16px rgba(163,230,53,.6); }
+  .v3-topscrim { position: fixed; top: 0; left: 0; right: 0; height: 92px; z-index: 54; pointer-events: none; background: linear-gradient(180deg, rgba(6,20,13,.85), rgba(6,20,13,0)); }
+  .v3-topbar { position: fixed; top: 0; left: 0; right: 0; z-index: 55; display: flex; align-items: center; justify-content: space-between; padding: 16px clamp(16px,4vw,48px); pointer-events: none; }
+  .v3-back { pointer-events: auto; display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #d1fae5; text-decoration: none; padding: 8px 14px; border-radius: 999px; background: rgba(255,255,255,.05); border: 1px solid rgba(163,230,53,.2); backdrop-filter: blur(8px); transition: .25s; }
+  .v3-back:hover { color: #fff; border-color: rgba(163,230,53,.6); background: rgba(52,211,153,.12); }
+  .v3-badge { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: #bef264; }
+  .v3-badge-dot { width: 7px; height: 7px; border-radius: 50%; background: #a3e635; box-shadow: 0 0 10px #a3e635; }
+
+  /* floating leaves */
+  .v3-leaves { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+  .v3-leaf { position: absolute; color: #6ee7b7; opacity: var(--op); will-change: transform; }
+  .v3-leaf-inner { display: block; width: var(--size); height: var(--size); animation: v3-float var(--dur) ease-in-out infinite; animation-delay: var(--delay); }
+  .v3-leaf svg { width: 100%; height: 100%; }
+  @keyframes v3-float { 0%,100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-20px) rotate(10deg); } }
+
+  .v3-shell { width: 100%; max-width: 1120px; margin: 0 auto; padding: 0 clamp(20px,5vw,40px); }
+  .v3-kicker { font-size: 13px; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; color: #bef264; }
+  .v3-h2 { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: clamp(1.9rem,5vw,3rem); line-height: 1.08; letter-spacing: -.02em; margin: 12px 0 0; color: #f0fff8; }
+  .v3-sub { margin-top: 16px; font-size: 1.05rem; line-height: 1.7; color: #9fcbb5; }
+  .v3-section-head { max-width: 640px; margin: 0 auto 48px; text-align: center; }
+
+  /* buttons */
+  .v3-btn { display: inline-flex; align-items: center; gap: 10px; padding: 14px 24px; border-radius: 14px; font-size: 15px; font-weight: 600; text-decoration: none; transition: transform .2s, box-shadow .3s, background .3s, border-color .3s, color .3s; }
+  .v3-btn-sm { padding: 11px 18px; font-size: 14px; margin-top: 14px; }
+  .v3-btn-primary { color: #06291b; background: linear-gradient(110deg,#bef264,#34d399 60%,#fcd34d); box-shadow: 0 10px 28px -8px rgba(52,211,153,.6); }
+  .v3-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 16px 40px -8px rgba(163,230,53,.7); }
+  .v3-btn-ghost { color: var(--ink); background: rgba(255,255,255,.04); border: 1px solid rgba(163,230,53,.25); }
+  .v3-btn-ghost:hover { transform: translateY(-2px); border-color: rgba(163,230,53,.6); color: #fff; }
+
+  /* ---------- HERO ---------- */
+  .v3-hero { position: relative; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 120px 0 90px; overflow: hidden; }
+  .v3-scene { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+  .v3-sun { position: absolute; top: 12%; right: 14%; width: 180px; height: 180px; border-radius: 50%; background: radial-gradient(circle,#fde68a,#fbbf24 55%,rgba(251,146,60,0) 72%); filter: blur(2px); opacity: .8; will-change: transform; }
+  .v3-hills { position: absolute; left: -2%; width: 104%; will-change: transform; }
+  .v3-hills-far { bottom: 18%; height: 38vh; opacity: .85; }
+  .v3-hills-far path { fill: #134d34; }
+  .v3-hills-mid { bottom: 8%; height: 34vh; }
+  .v3-hills-mid path { fill: #0c3d28; }
+  .v3-fog { position: absolute; bottom: 16%; left: 0; right: 0; height: 26vh; background: linear-gradient(180deg, rgba(167,243,208,0), rgba(167,243,208,.08) 60%, rgba(167,243,208,0)); filter: blur(8px); }
+  .v3-trees { position: absolute; bottom: 0; left: -2%; width: 104%; height: 22vh; color: #07230f; will-change: transform; }
+
+  .v3-hero-grid { position: relative; z-index: 2; width: 100%; max-width: 1180px; margin: 0 auto; padding: 0 clamp(20px,5vw,48px); display: grid; gap: 40px; align-items: center; grid-template-columns: 1fr; }
+  .v3-eyebrow { display: inline-flex; align-items: center; gap: 9px; font-size: 13px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: #bef264; }
+  .v3-title { font-family: 'Space Grotesk', sans-serif; font-weight: 700; line-height: .98; letter-spacing: -.03em; font-size: clamp(2.6rem,8vw,5.6rem); margin: 18px 0 0; color: #f0fff8; }
+  .v3-title-line { display: block; }
+  .v3-title-script { display: block; font-family: 'Caveat', cursive; font-weight: 700; font-size: 1.32em; line-height: .9; margin-top: .04em; background: linear-gradient(100deg,#bef264,#34d399 45%,#fcd34d); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .v3-lede { max-width: 600px; margin-top: 26px; font-size: clamp(1rem,2.2vw,1.18rem); line-height: 1.7; color: #a7d3bf; }
+  .v3-lede strong { color: #eafff5; font-weight: 600; }
+  .v3-cta-row { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 34px; }
+
+  .v3-hero-avatar { position: relative; justify-self: center; width: min(80vw, 340px); }
+  .v3-avatar-ring { position: relative; width: 100%; aspect-ratio: 1; border-radius: 50%; padding: 10px; background: conic-gradient(from 180deg,#bef264,#34d399,#fcd34d,#bef264); box-shadow: 0 30px 60px -20px rgba(0,0,0,.7), 0 0 0 1px rgba(163,230,53,.2); will-change: transform; }
+  .v3-avatar-ring img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block; border: 6px solid #06140d; }
+  .v3-avatar-orbit { position: absolute; inset: -14px; border-radius: 50%; border: 1.5px dashed rgba(190,242,100,.4); animation: v3-spin 26s linear infinite; }
+  @keyframes v3-spin { to { transform: rotate(360deg); } }
+  .v3-avatar-chip { position: absolute; display: flex; flex-direction: column; line-height: 1.1; padding: 10px 14px; border-radius: 14px; background: rgba(7,24,15,.85); border: 1px solid rgba(163,230,53,.25); backdrop-filter: blur(8px); box-shadow: 0 12px 30px -14px rgba(0,0,0,.8); }
+  .v3-avatar-chip strong { font-family: 'Space Grotesk',sans-serif; font-size: 1.1rem; color: #eafff5; }
+  .v3-avatar-chip span { font-size: 11px; color: #9fcbb5; }
+  .v3-chip-a { top: 8%; left: -8%; }
+  .v3-chip-b { bottom: 10%; right: -6%; }
+
+  .v3-scrollhint { position: absolute; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 10px; font-size: 11px; letter-spacing: .22em; text-transform: uppercase; color: #7fae97; text-decoration: none; }
+  .v3-mouse { width: 24px; height: 38px; border: 2px solid rgba(190,242,100,.4); border-radius: 14px; display: flex; justify-content: center; padding-top: 6px; }
+  .v3-wheel { width: 3px; height: 8px; border-radius: 3px; background: #bef264; animation: v3-wheel 1.6s ease-in-out infinite; }
+  @keyframes v3-wheel { 0% { opacity: 0; transform: translateY(-4px); } 40% { opacity: 1; } 100% { opacity: 0; transform: translateY(10px); } }
+
+  /* ---------- EXPEDITION (pinned) ---------- */
+  .v3-expedition { position: relative; z-index: 2; height: 460vh; }
+  .v3-stage { position: sticky; top: 0; height: 100vh; overflow: hidden; }
+  .v3-sky { position: absolute; inset: 0; background: linear-gradient(180deg,#0a2c1d 0%, #0e3a26 38%, #15532f 70%, #1c5f33 100%); }
+  .v3-stage::after { content: ""; position: absolute; left: 50%; top: 14%; width: 220px; height: 220px; transform: translateX(40vw); border-radius: 50%; background: radial-gradient(circle,#fde68a,#fbbf24 55%,rgba(251,146,60,0) 72%); opacity: .55; pointer-events: none; }
+  .v3-stage-head { position: absolute; top: clamp(64px, 11vh, 110px); left: 0; right: 0; text-align: center; z-index: 4; padding: 0 20px; pointer-events: none; }
+  .v3-mountain { position: absolute; left: 50%; bottom: -2%; transform: translateX(-50%); height: 96%; max-height: 940px; width: auto; aspect-ratio: 1; z-index: 2; }
+  .v3-trail-track { fill: none; stroke: rgba(234,255,245,.18); stroke-width: 5; stroke-dasharray: 2 12; stroke-linecap: round; }
+  .v3-trail-draw { fill: none; stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; filter: drop-shadow(0 0 7px rgba(252,211,77,.6)); }
+  .v3-hiker { will-change: transform; filter: drop-shadow(0 6px 10px rgba(0,0,0,.5)); }
+  .v3-summit-flag { transform-box: fill-box; }
+
+  /* camps overlay */
+  .v3-camps { position: absolute; inset: 0; z-index: 5; pointer-events: none; }
+  .v3-camp { position: absolute; left: 0; top: 0; width: min(330px, 78vw); opacity: 0; transition: opacity .5s ease, transform .5s ease; }
+  .v3-camp-node { position: absolute; left: 0; top: 0; width: 16px; height: 16px; transform: translate(-50%,-50%); display: grid; place-items: center; }
+  .v3-camp-node span { width: 12px; height: 12px; border-radius: 50%; background: #fcd34d; box-shadow: 0 0 0 4px rgba(252,211,77,.2), 0 0 14px 3px rgba(252,211,77,.7); }
+  .v3-node-summit span { background: #fb923c; box-shadow: 0 0 0 5px rgba(251,146,60,.22), 0 0 18px 4px rgba(251,146,60,.8); }
+  .v3-camp-card { pointer-events: auto; padding: 18px 20px; border-radius: 18px; background: linear-gradient(180deg, rgba(8,28,18,.92), rgba(6,20,13,.92)); border: 1px solid rgba(163,230,53,.22); backdrop-filter: blur(10px); box-shadow: 0 22px 50px -22px rgba(0,0,0,.85); }
+  .v3-camp-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .v3-camp-tag { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #06291b; background: linear-gradient(110deg,#bef264,#34d399); padding: 4px 10px; border-radius: 999px; }
+  .v3-tag-summit { background: linear-gradient(110deg,#fcd34d,#fb923c); }
+  .v3-camp-period { font-size: 12px; font-weight: 600; color: #bef264; }
+  .v3-camp-role { font-family: 'Space Grotesk',sans-serif; font-size: 1.22rem; font-weight: 700; color: #f0fff8; margin: 12px 0 2px; }
+  .v3-camp-company { font-size: .92rem; font-weight: 600; color: #6ee7b7; }
+  .v3-camp-desc { margin-top: 9px; font-size: .9rem; line-height: 1.55; color: #a7d3bf; }
+  .v3-camp-high { margin-top: 10px; display: flex; gap: 8px; font-size: .86rem; line-height: 1.45; color: #d1fae5; }
+  .v3-camp-high svg { flex: none; margin-top: 2px; color: #a3e635; }
+  .v3-camp.active { opacity: 1; }
+  html:not(.v3-js) .v3-camp { opacity: 1; position: relative; width: auto; margin: 12px 0; }
+
+  .v3-hud { position: absolute; left: clamp(16px,4vw,40px); top: 50%; transform: translateY(-50%); z-index: 6; display: flex; flex-direction: column; align-items: center; gap: 10px; pointer-events: none; }
+  .v3-hud-label { writing-mode: vertical-rl; font-size: 10px; letter-spacing: .25em; text-transform: uppercase; color: #7fae97; }
+  .v3-gauge { width: 6px; height: 200px; border-radius: 999px; background: rgba(255,255,255,.1); overflow: hidden; display: flex; align-items: flex-end; }
+  .v3-gauge-fill { width: 100%; height: 0%; border-radius: 999px; background: linear-gradient(180deg,#fcd34d,#34d399,#a3e635); box-shadow: 0 0 12px rgba(163,230,53,.7); }
+  .v3-elev { font-family: 'Space Grotesk',sans-serif; font-size: 13px; font-weight: 600; color: #eafff5; }
+
+  .v3-stage-hint { position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%); z-index: 6; font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: #7fae97; animation: v3-bob 2s ease-in-out infinite; }
+  @keyframes v3-bob { 0%,100% { transform: translate(-50%,0); } 50% { transform: translate(-50%,6px); } }
+
+  /* ---------- GEAR ---------- */
+  .v3-gear-section { position: relative; z-index: 2; padding: 90px 0; }
+  .v3-gear-grid { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+  .v3-gear-item { display: inline-flex; align-items: center; gap: 9px; padding: 11px 18px; border-radius: 999px; font-size: 14px; font-weight: 500; color: #d1fae5; background: rgba(255,255,255,.04); border: 1px solid rgba(163,230,53,.18); transition: transform .25s, border-color .25s, background .25s, color .25s, opacity .8s, filter .8s; }
+  .v3-gear-item svg { color: #a3e635; }
+  .v3-gear-item:hover { transform: translateY(-3px); border-color: rgba(163,230,53,.55); background: rgba(52,211,153,.1); color: #fff; }
+
+  /* ---------- STATS ---------- */
+  .v3-stats-section { position: relative; z-index: 2; padding: 30px 0 70px; }
+  .v3-stats { display: grid; grid-template-columns: repeat(2,1fr); gap: 24px; padding: 38px clamp(20px,4vw,44px); border-radius: 26px; background: linear-gradient(180deg, rgba(13,40,26,.7), rgba(7,22,14,.66)); border: 1px solid rgba(163,230,53,.16); backdrop-filter: blur(12px); }
+  .v3-stat { text-align: center; }
+  .v3-stat-num { display: block; font-family: 'Space Grotesk',sans-serif; font-weight: 700; font-size: clamp(2.1rem,6vw,3.3rem); line-height: 1; background: linear-gradient(110deg,#bef264,#34d399,#fcd34d); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .v3-stat-label { display: block; margin-top: 10px; font-size: .85rem; color: #9fcbb5; }
+
+  /* ---------- CTA ---------- */
+  .v3-cta-section { position: relative; z-index: 2; padding: 30px 0 90px; }
+  .v3-cta-panel { position: relative; overflow: hidden; padding: clamp(40px,6vw,76px) clamp(24px,5vw,60px) clamp(70px,8vw,96px); border-radius: 30px; text-align: center; background: linear-gradient(160deg, rgba(52,211,153,.16), rgba(20,83,45,.18) 60%, rgba(255,255,255,.02)), rgba(7,22,14,.6); border: 1px solid rgba(163,230,53,.2); backdrop-filter: blur(12px); }
+  .v3-cta-trees { position: absolute; left: 0; right: 0; bottom: 0; height: 90px; color: #06291b; opacity: .9; }
+  .v3-cta-trees svg { width: 100%; height: 100%; }
+  .v3-cta-title { position: relative; font-family: 'Space Grotesk',sans-serif; font-weight: 700; font-size: clamp(1.7rem,5vw,2.9rem); letter-spacing: -.02em; color: #f0fff8; margin: 12px 0 0; }
+  .v3-cta-sub { position: relative; max-width: 520px; margin: 14px auto 0; color: #a7d3bf; line-height: 1.65; }
+  .v3-cta-actions { position: relative; margin-top: 30px; display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: center; }
+  .v3-socials { display: flex; gap: 10px; }
+  .v3-social { display: grid; place-items: center; width: 46px; height: 46px; border-radius: 14px; color: #d1fae5; background: rgba(255,255,255,.05); border: 1px solid rgba(163,230,53,.2); transition: .25s; }
+  .v3-social:hover { transform: translateY(-3px); color: #fff; border-color: rgba(163,230,53,.6); background: rgba(52,211,153,.12); }
+  .v3-foot { position: relative; margin-top: 34px; font-size: 13px; color: #5f876f; }
+
+  /* ---------- desktop ---------- */
+  @media (min-width: 768px) {
+    .v3-hero-grid { grid-template-columns: 1.25fr .9fr; gap: 56px; }
+    .v3-hero-avatar { width: min(38vw, 380px); }
+    .v3-stats { grid-template-columns: repeat(4,1fr); }
+  }
+
+  /* ---------- mobile camps: bottom sheet ---------- */
+  @media (max-width: 767px) {
+    html.v3-js .v3-camp { left: 50% !important; top: auto !important; bottom: 4%; width: 90vw; transform: translateX(-50%) translateY(20px); }
+    html.v3-js .v3-camp .v3-camp-node { display: none; }
+    html.v3-js .v3-camp.active { transform: translateX(-50%) translateY(0); }
+    html.v3-js .v3-camp:not(.is-current) { opacity: 0; pointer-events: none; }
+    .v3-hud { display: none; }
+    .v3-mountain { height: 70%; bottom: 8%; }
+  }
+
+  /* ---------- reduced motion ---------- */
+  @media (prefers-reduced-motion: reduce) {
+    .v3-leaf-inner, .v3-avatar-orbit, .v3-wheel, .v3-stage-hint, .v3-stat-num { animation: none !important; }
+    html.v3-js .v3-reveal { opacity: 1; transform: none; filter: none; }
+    .v3-expedition { height: auto; }
+    .v3-stage { position: relative; height: auto; padding: 80px 0; }
+    html.v3-js .v3-camp { position: relative; opacity: 1; left: auto !important; top: auto !important; transform: none !important; width: min(560px,90vw); margin: 14px auto; }
+    html.v3-js .v3-camp .v3-camp-node { display: none; }
+    .v3-mountain { position: relative; transform: none; left: auto; margin: 0 auto 30px; display: block; height: auto; width: min(560px,90vw); }
+  }
+</style>
+
+<script>
+  const root = document.querySelector('.v3-root');
+  if (root) {
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
+
+    // reveals
+    const revealEls = Array.from(document.querySelectorAll<HTMLElement>('.v3-reveal'));
+    if (reduce) revealEls.forEach((el) => el.classList.add('in'));
+    else {
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+      }, { threshold: 0.15, rootMargin: '0px 0px -8% 0px' });
+      revealEls.forEach((el) => io.observe(el));
+    }
+
+    // count-up
+    const counters = Array.from(document.querySelectorAll<HTMLElement>('.v3-counter'));
+    const runCount = (el: HTMLElement) => {
+      const target = parseFloat(el.dataset.target || '0');
+      const suffix = el.dataset.suffix || '';
+      if (reduce) { el.textContent = target + suffix; return; }
+      const dur = 1500; const t0 = performance.now();
+      const step = (now: number) => {
+        const t = Math.min((now - t0) / dur, 1);
+        const eased = 1 - Math.pow(1 - t, 3);
+        el.textContent = Math.round(target * eased) + suffix;
+        if (t < 1) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    };
+    const cio = new IntersectionObserver((entries) => {
+      entries.forEach((e) => { if (e.isIntersecting) { runCount(e.target as HTMLElement); cio.unobserve(e.target); } });
+    }, { threshold: 0.6 });
+    counters.forEach((el) => cio.observe(el));
+
+    // hero parallax (pointer + scroll)
+    const depthEls = Array.from(document.querySelectorAll<HTMLElement>('[data-depth]'));
+    const hero = document.getElementById('v3-hero');
+    let mx = 0, my = 0;
+    if (hero && !reduce) {
+      hero.addEventListener('pointermove', (ev) => {
+        const r = hero.getBoundingClientRect();
+        mx = (ev.clientX - r.left) / r.width - 0.5;
+        my = (ev.clientY - r.top) / r.height - 0.5;
+        onScroll();
+      }, { passive: true });
+    }
+
+    // ---- pinned expedition ----
+    const wrap = document.getElementById('expedition');
+    const stage = wrap?.querySelector<HTMLElement>('.v3-stage') || null;
+    const trail = document.getElementById('v3-trail') as SVGPathElement | null;
+    const hiker = document.getElementById('v3-hiker') as SVGGElement | null;
+    const gauge = document.getElementById('v3-gauge-fill');
+    const elev = document.getElementById('v3-elev');
+    const campEls = Array.from(document.querySelectorAll<HTMLElement>('.v3-camp'));
+    let trailLen = trail ? trail.getTotalLength() : 0;
+    const MAX_ELEV = 4810; // a nod to Mont Blanc
+
+    // place each camp node + card along the trail
+    const placeCamps = () => {
+      if (!trail || !stage || reduce) return;
+      const ctm = trail.getScreenCTM();
+      if (!ctm) return;
+      const sr = stage.getBoundingClientRect();
+      const w = sr.width;
+      campEls.forEach((camp) => {
+        const t = parseFloat(camp.dataset.t || '0');
+        const pt = trail.getPointAtLength(trailLen * t);
+        const sx = pt.x * ctm.a + pt.y * ctm.c + ctm.e - sr.left;
+        const sy = pt.x * ctm.b + pt.y * ctm.d + ctm.f - sr.top;
+        const node = camp.querySelector<HTMLElement>('.v3-camp-node');
+        const card = camp.querySelector<HTMLElement>('.v3-camp-card');
+        if (node) { node.style.left = sx + 'px'; node.style.top = sy + 'px'; }
+        // choose side with more room
+        const toRight = sx < w * 0.5;
+        const cw = card ? card.offsetWidth : 300;
+        let cx = toRight ? sx + 26 : sx - 26 - cw;
+        cx = clamp(cx, 12, w - cw - 12);
+        camp.style.left = cx + 'px';
+        // vertical: center card on node, clamp into view
+        const ch = card ? card.offsetHeight : 180;
+        let cy = clamp(sy - ch / 2, 84, sr.height - ch - 16);
+        camp.style.top = cy + 'px';
+      });
+    };
+
+    let ticking = false;
+    const update = () => {
+      ticking = false;
+      const st = window.scrollY || window.pageYOffset;
+      const vh = window.innerHeight;
+      const docH = document.documentElement.scrollHeight - vh;
+      const gp = docH > 0 ? clamp(st / docH, 0, 1) : 0;
+      const progress = document.getElementById('v3-progress');
+      if (progress) progress.style.transform = 'scaleX(' + gp + ')';
+
+      // hero parallax
+      if (!reduce) {
+        for (const el of depthEls) {
+          const d = parseFloat(el.dataset.depth || '0');
+          const ty = (el.closest('#v3-hero') ? st * d * 0.6 : 0);
+          el.style.transform = `translate3d(${(mx * d * 60).toFixed(1)}px, ${(my * d * 40 - ty).toFixed(1)}px, 0)`;
+        }
+      }
+
+      // pinned climb progress
+      if (wrap && stage && !reduce) {
+        const rect = wrap.getBoundingClientRect();
+        const scrollable = wrap.offsetHeight - vh;
+        const p = scrollable > 0 ? clamp(-rect.top / scrollable, 0, 1) : 0;
+
+        if (trail) trail.style.strokeDashoffset = String(1 - p);
+        if (hiker && trailLen) {
+          const pt = trail!.getPointAtLength(trailLen * p);
+          hiker.setAttribute('transform', `translate(${pt.x} ${pt.y})`);
+        }
+        if (gauge) gauge.style.height = (p * 100).toFixed(1) + '%';
+        if (elev) elev.textContent = Math.round(p * MAX_ELEV).toLocaleString() + ' m';
+
+        // camp activation + current (for mobile bottom sheet)
+        let currentIdx = -1;
+        campEls.forEach((camp) => {
+          const t = parseFloat(camp.dataset.t || '0');
+          const on = p >= t - 0.02;
+          camp.classList.toggle('active', on);
+          if (on) currentIdx = parseInt(camp.dataset.index || '-1', 10);
+        });
+        campEls.forEach((camp) => {
+          camp.classList.toggle('is-current', parseInt(camp.dataset.index || '-1', 10) === currentIdx);
+        });
+      }
+    };
+
+    const onScroll = () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } };
+    const recalc = () => { trailLen = trail ? trail.getTotalLength() : 0; placeCamps(); update(); };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', recalc, { passive: true });
+    window.addEventListener('load', recalc);
+    recalc();
+  }
+</script>
