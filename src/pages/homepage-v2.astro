@@ -64,6 +64,9 @@ const floating: Placement[] = [
       <div id="v2-progress" class="v2-progress-bar"></div>
     </div>
 
+    <!-- Top scrim so fixed bar stays legible over scrolling content -->
+    <div class="v2-topscrim" aria-hidden="true"></div>
+
     <!-- Minimal top bar (no main nav) -->
     <div class="v2-topbar">
       <a href="/" class="v2-back" aria-label="Back to main site">
@@ -332,6 +335,11 @@ const floating: Placement[] = [
     background: linear-gradient(90deg, #60a5fa, #22d3ee, #a855f7);
     box-shadow: 0 0 18px rgba(34, 211, 238, 0.6);
   }
+  .v2-topscrim {
+    position: fixed; top: 0; left: 0; right: 0; height: 92px; z-index: 54; pointer-events: none;
+    background: linear-gradient(180deg, rgba(5, 6, 15, 0.85), rgba(5, 6, 15, 0));
+    -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
+  }
   .v2-topbar {
     position: fixed; top: 0; left: 0; right: 0; z-index: 55;
     display: flex; align-items: center; justify-content: space-between;
@@ -596,9 +604,9 @@ const floating: Placement[] = [
   .v2-stats {
     display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px;
     padding: 38px clamp(20px, 4vw, 44px); border-radius: 26px;
-    background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
+    background: linear-gradient(180deg, rgba(13, 18, 38, 0.72), rgba(8, 11, 26, 0.66));
     border: 1px solid rgba(255,255,255,0.08);
-    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
   }
   .v2-stat { text-align: center; }
   .v2-stat-num {
@@ -614,8 +622,11 @@ const floating: Placement[] = [
   .v2-cta-panel {
     position: relative; overflow: hidden; padding: clamp(36px, 6vw, 72px);
     border-radius: 32px; text-align: center;
-    background: linear-gradient(160deg, rgba(96,165,250,0.12), rgba(168,85,247,0.1) 60%, rgba(255,255,255,0.02));
+    background:
+      linear-gradient(160deg, rgba(96,165,250,0.16), rgba(168,85,247,0.12) 60%, rgba(255,255,255,0.02)),
+      rgba(8, 11, 26, 0.55);
     border: 1px solid rgba(255,255,255,0.12);
+    -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
   }
   .v2-cta-glow {
     position: absolute; width: 520px; height: 520px; left: 50%; top: -60%; transform: translateX(-50%);
@@ -633,6 +644,11 @@ const floating: Placement[] = [
   }
   .v2-social:hover { transform: translateY(-3px); color: #fff; border-color: rgba(125,211,252,0.6); background: rgba(96,165,250,0.12); }
   .v2-foot { margin-top: 40px; text-align: center; font-size: 13px; color: #475569; }
+
+  /* ---------- mobile: declutter ---------- */
+  @media (max-width: 899px) {
+    .v2-thread, .v2-comet { display: none; }
+  }
 
   /* ---------- desktop ladder layout ---------- */
   @media (min-width: 900px) {
