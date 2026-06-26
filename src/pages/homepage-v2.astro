@@ -1,0 +1,807 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { siteConfig } from '../lib/site';
+import { experiences, skillGroups, stats } from '../lib/content';
+
+// Career data, reversed so the journey "levels up" from the origin to the present.
+const levels = [...experiences].reverse();
+
+// Stats parsed for count-up animation (∞ stays static).
+const counterStats = stats.map((s) => {
+  const num = parseInt(s.value.replace(/[^0-9]/g, ''), 10);
+  const isNum = !Number.isNaN(num) && /[0-9]/.test(s.value);
+  const suffix = s.value.replace(/[0-9]/g, '');
+  return { ...s, num, isNum, suffix };
+});
+
+const allSkills = skillGroups.flatMap((g) => g.skills);
+const marqueeA = allSkills.slice(0, Math.ceil(allSkills.length / 2));
+const marqueeB = allSkills.slice(Math.ceil(allSkills.length / 2));
+
+// Library of simple, recognisable tech glyphs (24x24 stroke icons).
+const iconLib: string[] = [
+  '<path d="M7 4c-2 0-3 1-3 3v2c0 1-1 2-2 2 1 0 2 1 2 2v2c0 2 1 3 3 3"/><path d="M17 4c2 0 3 1 3 3v2c0 1 1 2 2 2-1 0-2 1-2 2v2c0 2-1 3-3 3"/>', // braces
+  '<path d="m9 18-6-6 6-6"/><path d="m15 6 6 6-6 6"/>', // </>
+  '<circle cx="12" cy="12" r="1.7"/><ellipse cx="12" cy="12" rx="10" ry="4"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(120 12 12)"/>', // react atom
+  '<path d="m12 2 8.66 5v10L12 22 3.34 17V7z"/>', // hexagon / node
+  '<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.66 3.58 3 8 3s8-1.34 8-3V5"/><path d="M4 11v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6"/>', // database
+  '<circle cx="6" cy="6" r="2.4"/><circle cx="6" cy="18" r="2.4"/><circle cx="18" cy="8" r="2.4"/><path d="M6 8.4v7.2"/><path d="M18 10.4c0 4.2-3.2 5.6-6 5.6"/>', // git-branch
+  '<path d="M17.5 19a4.5 4.5 0 0 0 .5-9 6 6 0 0 0-11.6-1.5A4 4 0 0 0 6 19z"/>', // cloud
+  '<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>', // lightning
+  '<rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 1.5v3M15 1.5v3M9 19.5v3M15 19.5v3M1.5 9h3M1.5 15h3M19.5 9h3M19.5 15h3"/>', // cpu
+  '<path d="m12 2 9 5v10l-9 5-9-5V7z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/>', // package
+  '<path d="M7 20c0-8 1.5-12 4.5-12"/><path d="M5 12h7"/><path d="m13.5 14 5 5M18.5 14l-5 5"/>', // fx
+  '<path d="m4 7 5 5-5 5"/><path d="M13 17h7"/>', // terminal
+];
+
+// Scattered placements for the floating background icons.
+type Placement = { i: number; cls: string; size: number; op: number; blur: number; speed: number; dur: number; delay: number };
+const floating: Placement[] = [
+  { i: 0,  cls: 'left-[5%]  top-[10%]',  size: 56, op: 0.10, blur: 0, speed: 0.08,  dur: 9,  delay: 0 },
+  { i: 1,  cls: 'left-[88%] top-[16%]',  size: 44, op: 0.12, blur: 0, speed: -0.05, dur: 11, delay: 1.2 },
+  { i: 2,  cls: 'left-[78%] top-[42%]',  size: 70, op: 0.07, blur: 1, speed: 0.12,  dur: 14, delay: 0.6 },
+  { i: 3,  cls: 'left-[12%] top-[38%]',  size: 40, op: 0.13, blur: 0, speed: -0.07, dur: 10, delay: 2 },
+  { i: 4,  cls: 'left-[6%]  top-[64%]',  size: 60, op: 0.08, blur: 1, speed: 0.06,  dur: 12, delay: 0.3 },
+  { i: 5,  cls: 'left-[90%] top-[60%]',  size: 38, op: 0.14, blur: 0, speed: -0.1,  dur: 9,  delay: 1.6 },
+  { i: 6,  cls: 'left-[82%] top-[82%]',  size: 64, op: 0.07, blur: 1, speed: 0.09,  dur: 13, delay: 0.9 },
+  { i: 7,  cls: 'left-[16%] top-[86%]',  size: 42, op: 0.12, blur: 0, speed: -0.06, dur: 10, delay: 2.4 },
+  { i: 8,  cls: 'left-[46%] top-[6%]',   size: 36, op: 0.10, blur: 0, speed: 0.05,  dur: 11, delay: 1 },
+  { i: 9,  cls: 'left-[40%] top-[92%]',  size: 50, op: 0.08, blur: 1, speed: -0.08, dur: 12, delay: 0.5 },
+  { i: 10, cls: 'left-[63%] top-[24%]',  size: 34, op: 0.11, blur: 0, speed: 0.07,  dur: 9,  delay: 1.8 },
+  { i: 11, cls: 'left-[28%] top-[56%]',  size: 46, op: 0.10, blur: 0, speed: -0.05, dur: 13, delay: 0.2 },
+];
+---
+
+<BaseLayout
+  title="Dheeraj Dagar — The Ascent"
+  description="An interactive, animated journey through a decade of full stack engineering."
+>
+  <script is:inline>document.documentElement.classList.add('v2-js');</script>
+
+  <div class="v2-root">
+    <!-- Scroll progress bar -->
+    <div class="v2-progress-track" aria-hidden="true">
+      <div id="v2-progress" class="v2-progress-bar"></div>
+    </div>
+
+    <!-- Minimal top bar (no main nav) -->
+    <div class="v2-topbar">
+      <a href="/" class="v2-back" aria-label="Back to main site">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+        Main site
+      </a>
+      <span class="v2-badge">v2 · experimental</span>
+    </div>
+
+    <!-- Fixed animated background -->
+    <div class="v2-bg" aria-hidden="true">
+      <div class="v2-mesh v2-mesh-1"></div>
+      <div class="v2-mesh v2-mesh-2"></div>
+      <div class="v2-mesh v2-mesh-3"></div>
+      <div class="v2-grid"></div>
+      <div class="v2-grain"></div>
+    </div>
+
+    <!-- Floating tech icons (parallax) -->
+    <div class="v2-icons" aria-hidden="true">
+      {floating.map((f) => (
+        <span
+          class={`v2-icon ${f.cls}`}
+          data-speed={f.speed}
+          style={`--size:${f.size}px; --op:${f.op}; --blur:${f.blur}px; --dur:${f.dur}s; --delay:${f.delay}s;`}
+        >
+          <span class="v2-icon-inner">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" set:html={iconLib[f.i]} />
+          </span>
+        </span>
+      ))}
+    </div>
+
+    <!-- Comet head that rides the drawn thread -->
+    <div id="v2-comet" class="v2-comet" aria-hidden="true"></div>
+
+    <main id="main" class="v2-content">
+      <div class="v2-thread-wrap">
+        <!-- Page-spanning SVG thread that draws as you scroll -->
+        <svg
+          id="v2-thread"
+          class="v2-thread"
+          viewBox="0 0 100 2400"
+          preserveAspectRatio="none"
+          fill="none"
+          aria-hidden="true"
+        >
+          <defs>
+            <linearGradient id="threadGrad" x1="0" y1="0" x2="0" y2="2400" gradientUnits="userSpaceOnUse">
+              <stop offset="0" stop-color="#60a5fa" />
+              <stop offset="0.5" stop-color="#22d3ee" />
+              <stop offset="1" stop-color="#a855f7" />
+            </linearGradient>
+          </defs>
+          <path
+            class="v2-thread-track"
+            d="M50 0 C 18 300 82 600 50 900 C 18 1200 82 1500 50 1800 C 30 2050 70 2200 50 2400"
+          />
+          <path
+            id="thread-path"
+            class="v2-thread-draw"
+            pathLength="1"
+            stroke="url(#threadGrad)"
+            d="M50 0 C 18 300 82 600 50 900 C 18 1200 82 1500 50 1800 C 30 2050 70 2200 50 2400"
+          />
+        </svg>
+
+        <!-- ===================== HERO ===================== -->
+        <section id="v2-hero" class="v2-hero">
+          <div id="v2-spotlight" class="v2-spotlight"></div>
+          <div class="v2-shell">
+            <p class="v2-eyebrow v2-reveal">
+              <span class="v2-pulse"></span>
+              {siteConfig.role} · {siteConfig.location}
+            </p>
+            <h1 class="v2-title v2-reveal">
+              <span class="v2-title-line">I build the web</span>
+              <span class="v2-title-line v2-gradient-text">like it&apos;s an</span>
+              <span class="v2-title-line v2-gradient-text">adventure.</span>
+            </h1>
+            <p class="v2-lede v2-reveal">
+              I&apos;m <strong>{siteConfig.name}</strong> — a full stack developer with
+              {siteConfig.yearsOfExperience}+ years turning ambitious ideas into fast,
+              accessible, production-grade products. Scroll to trace the journey.
+            </p>
+            <div class="v2-cta-row v2-reveal">
+              <a href="#ascent" class="v2-btn v2-btn-primary">
+                Begin the ascent
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>
+              </a>
+              <a href={siteConfig.social.email} class="v2-btn v2-btn-ghost">Get in touch</a>
+            </div>
+          </div>
+
+          <div class="v2-scrollhint v2-reveal" aria-hidden="true">
+            <span>scroll</span>
+            <span class="v2-mouse"><span class="v2-wheel"></span></span>
+          </div>
+        </section>
+
+        <!-- ===================== MARQUEE ===================== -->
+        <section class="v2-marquee-section" aria-hidden="true">
+          <div class="v2-marquee">
+            <div class="v2-marquee-row v2-marquee-left">
+              {[...marqueeA, ...marqueeA].map((s) => (<span class="v2-chip">{s}</span>))}
+            </div>
+            <div class="v2-marquee-row v2-marquee-right">
+              {[...marqueeB, ...marqueeB].map((s) => (<span class="v2-chip v2-chip-dim">{s}</span>))}
+            </div>
+          </div>
+        </section>
+
+        <!-- ===================== CAREER ASCENT ===================== -->
+        <section id="ascent" class="v2-ascent">
+          <div class="v2-shell">
+            <header class="v2-section-head v2-reveal">
+              <p class="v2-kicker">The Ascent</p>
+              <h2 class="v2-h2">A decade, climbed one level at a time</h2>
+              <p class="v2-sub">
+                Each rung is a role that raised the altitude — bigger systems, sharper craft,
+                more impact. The trail lights up as you climb.
+              </p>
+            </header>
+
+            <div id="v2-spine" class="v2-ladder">
+              <!-- central glowing spine -->
+              <div class="v2-spine-track" aria-hidden="true"></div>
+              <div id="v2-spine-fill" class="v2-spine-fill" aria-hidden="true"></div>
+
+              {levels.map((lvl, idx) => (
+                <article class={`v2-rung ${idx % 2 === 0 ? 'is-left' : 'is-right'}`}>
+                  <div class="v2-node" aria-hidden="true">
+                    <span class="v2-node-core"></span>
+                    <span class="v2-node-ring"></span>
+                  </div>
+
+                  <div class="v2-altitude" aria-hidden="true">
+                    <span class="v2-altitude-num">{String(idx + 1).padStart(2, '0')}</span>
+                    <span class="v2-altitude-label">Level</span>
+                  </div>
+
+                  <div class="v2-rung-card v2-reveal">
+                    <div class="v2-rung-top">
+                      <span class="v2-rung-period">{lvl.period}</span>
+                      {idx === levels.length - 1 && <span class="v2-now">Now</span>}
+                    </div>
+                    <h3 class="v2-rung-role">{lvl.role}</h3>
+                    <p class="v2-rung-company">{lvl.company}</p>
+                    <p class="v2-rung-desc">{lvl.description}</p>
+                    <ul class="v2-rung-list">
+                      {lvl.highlights.map((h) => (
+                        <li>
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="v2-tick"><path d="m5 12 5 5L20 7"/></svg>
+                          <span>{h}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </article>
+              ))}
+
+              <!-- summit -->
+              <div class="v2-summit v2-reveal">
+                <div class="v2-summit-flag">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5"><path d="M4 22V4"/><path d="M4 4h11l-2 4 2 4H4"/></svg>
+                </div>
+                <p>...and the climb continues.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===================== STATS ===================== -->
+        <section class="v2-stats-section">
+          <div class="v2-shell">
+            <div class="v2-stats">
+              {counterStats.map((s) => (
+                <div class="v2-stat v2-reveal">
+                  <span class="v2-stat-num">
+                    {s.isNum
+                      ? <span class="v2-counter" data-target={s.num} data-suffix={s.suffix}>0{s.suffix}</span>
+                      : <span>{s.value}</span>}
+                  </span>
+                  <span class="v2-stat-label">{s.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <!-- ===================== CTA ===================== -->
+        <section id="v2-contact" class="v2-cta-section">
+          <div class="v2-shell">
+            <div class="v2-cta-panel v2-reveal">
+              <div class="v2-cta-glow" aria-hidden="true"></div>
+              <p class="v2-kicker">What&apos;s next</p>
+              <h2 class="v2-cta-title">Let&apos;s build the next chapter together.</h2>
+              <p class="v2-cta-sub">
+                Available for freelance and consulting work. Tell me about the summit
+                you&apos;re trying to reach.
+              </p>
+              <div class="v2-cta-actions">
+                <a href={siteConfig.social.email} class="v2-btn v2-btn-primary">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                  {siteConfig.email}
+                </a>
+                <div class="v2-socials">
+                  <a href={siteConfig.social.github} target="_blank" rel="noopener noreferrer" aria-label="GitHub" class="v2-social">
+                    <svg viewBox="0 0 24 24" fill="currentColor" class="h-5 w-5"><path d="M12 .5a12 12 0 0 0-3.79 23.4c.6.11.82-.26.82-.58v-2c-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.81 1.3 3.5.99.11-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.29-1.55 3.3-1.23 3.3-1.23.66 1.66.25 2.88.12 3.18.77.84 1.23 1.91 1.23 3.22 0 4.61-2.8 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58A12 12 0 0 0 12 .5z"/></svg>
+                  </a>
+                  <a href={siteConfig.social.linkedin} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" class="v2-social">
+                    <svg viewBox="0 0 24 24" fill="currentColor" class="h-5 w-5"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.03-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.55V9h3.57v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"/></svg>
+                  </a>
+                  <a href={siteConfig.social.twitter} target="_blank" rel="noopener noreferrer" aria-label="Twitter / X" class="v2-social">
+                    <svg viewBox="0 0 24 24" fill="currentColor" class="h-5 w-5"><path d="M18.9 1.15h3.68l-8.04 9.19L24 22.85h-7.41l-5.8-7.58-6.64 7.58H.46l8.6-9.83L0 1.15h7.59l5.24 6.93 6.07-6.93zm-1.29 19.5h2.04L6.49 3.24H4.3l13.31 17.41z"/></svg>
+                  </a>
+                </div>
+              </div>
+            </div>
+            <p class="v2-foot">© {new Date().getFullYear()} {siteConfig.name} · crafted as an experiment</p>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+</BaseLayout>
+
+<style is:global>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+  html.v2-js .v2-reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    filter: blur(6px);
+  }
+  html.v2-js .v2-reveal.in {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    transition: opacity 0.8s cubic-bezier(0.2, 0.7, 0.2, 1),
+      transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1),
+      filter 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  body { background: #05060f; }
+
+  .v2-root {
+    position: relative;
+    min-height: 100vh;
+    background:
+      radial-gradient(1200px 700px at 50% -10%, rgba(50, 125, 255, 0.18), transparent 60%),
+      radial-gradient(900px 600px at 100% 30%, rgba(168, 85, 247, 0.12), transparent 60%),
+      linear-gradient(180deg, #05060f 0%, #070a1a 50%, #05060f 100%);
+    color: #e2e8f0;
+    font-family: 'Inter', system-ui, sans-serif;
+    overflow-x: clip;
+  }
+
+  /* ---------- progress + topbar ---------- */
+  .v2-progress-track {
+    position: fixed; inset: 0 0 auto 0; height: 3px; z-index: 60;
+    background: rgba(255, 255, 255, 0.06);
+  }
+  .v2-progress-bar {
+    height: 100%; width: 100%; transform: scaleX(0); transform-origin: left;
+    background: linear-gradient(90deg, #60a5fa, #22d3ee, #a855f7);
+    box-shadow: 0 0 18px rgba(34, 211, 238, 0.6);
+  }
+  .v2-topbar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 55;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px clamp(16px, 4vw, 48px);
+    pointer-events: none;
+  }
+  .v2-back {
+    pointer-events: auto;
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 13px; font-weight: 600; letter-spacing: 0.02em;
+    color: #cbd5e1; text-decoration: none;
+    padding: 8px 14px; border-radius: 999px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(8px);
+    transition: color 0.25s, border-color 0.25s, background 0.25s;
+  }
+  .v2-back:hover { color: #fff; border-color: rgba(96, 165, 250, 0.5); background: rgba(96, 165, 250, 0.1); }
+  .v2-badge {
+    font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: #7dd3fc; opacity: 0.85;
+  }
+
+  /* ---------- background ---------- */
+  .v2-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+  .v2-mesh {
+    position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.55;
+    will-change: transform;
+  }
+  .v2-mesh-1 { width: 46vw; height: 46vw; left: -8vw; top: -6vw; background: radial-gradient(circle, #1d4ed8, transparent 70%); animation: v2-drift1 22s ease-in-out infinite; }
+  .v2-mesh-2 { width: 40vw; height: 40vw; right: -6vw; top: 28vh; background: radial-gradient(circle, #0891b2, transparent 70%); animation: v2-drift2 26s ease-in-out infinite; }
+  .v2-mesh-3 { width: 42vw; height: 42vw; left: 30vw; bottom: -10vw; background: radial-gradient(circle, #7c3aed, transparent 70%); animation: v2-drift3 30s ease-in-out infinite; }
+  @keyframes v2-drift1 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(6vw, 4vh) scale(1.1); } }
+  @keyframes v2-drift2 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-5vw, -3vh) scale(1.12); } }
+  @keyframes v2-drift3 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(3vw, -5vh) scale(0.92); } }
+
+  .v2-grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(148, 163, 184, 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(148, 163, 184, 0.06) 1px, transparent 1px);
+    background-size: 64px 64px;
+    -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, #000 30%, transparent 80%);
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, #000 30%, transparent 80%);
+  }
+  .v2-grain {
+    position: absolute; inset: 0; opacity: 0.04; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* ---------- floating icons ---------- */
+  .v2-icons { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+  .v2-icon { position: absolute; color: #93c5fd; opacity: var(--op); will-change: transform; }
+  .v2-icon-inner {
+    display: block; width: var(--size); height: var(--size); filter: blur(var(--blur));
+    animation: v2-float var(--dur) ease-in-out infinite;
+    animation-delay: var(--delay);
+  }
+  .v2-icon svg { width: 100%; height: 100%; }
+  @keyframes v2-float {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-22px) rotate(8deg); }
+  }
+
+  /* ---------- comet ---------- */
+  .v2-comet {
+    position: fixed; left: 0; top: 0; z-index: 30; width: 16px; height: 16px;
+    margin: -8px 0 0 -8px; border-radius: 50%; opacity: 0; pointer-events: none;
+    background: radial-gradient(circle, #fff 0%, #67e8f9 35%, rgba(34, 211, 238, 0) 70%);
+    box-shadow: 0 0 18px 6px rgba(103, 232, 249, 0.7), 0 0 40px 12px rgba(96, 165, 250, 0.4);
+    transition: opacity 0.4s;
+  }
+
+  /* ---------- layout helpers ---------- */
+  .v2-content { position: relative; z-index: 10; }
+  .v2-thread-wrap { position: relative; }
+  .v2-shell { width: 100%; max-width: 1120px; margin: 0 auto; padding: 0 clamp(20px, 5vw, 40px); }
+  .v2-thread {
+    position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none;
+    opacity: 0.9;
+  }
+  .v2-thread-track { stroke: rgba(148, 163, 184, 0.1); stroke-width: 2; }
+  .v2-thread-draw {
+    stroke-width: 2.5; stroke-linecap: round;
+    stroke-dasharray: 1; stroke-dashoffset: 1;
+    filter: drop-shadow(0 0 6px rgba(34, 211, 238, 0.55));
+  }
+
+  /* ---------- hero ---------- */
+  .v2-hero {
+    position: relative; z-index: 1;
+    min-height: 100vh; display: flex; flex-direction: column; justify-content: center;
+    padding: 120px 0 80px; overflow: hidden;
+  }
+  .v2-spotlight {
+    position: absolute; inset: 0; z-index: -1; opacity: 0; transition: opacity 0.5s;
+    background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 40%), rgba(96, 165, 250, 0.18), transparent 60%);
+  }
+  .v2-eyebrow {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-size: 13px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase;
+    color: #7dd3fc;
+  }
+  .v2-pulse { position: relative; width: 8px; height: 8px; border-radius: 50%; background: #22d3ee; box-shadow: 0 0 0 0 rgba(34,211,238,0.6); animation: v2-ping 1.8s ease-out infinite; }
+  @keyframes v2-ping { 0% { box-shadow: 0 0 0 0 rgba(34,211,238,0.5); } 80%,100% { box-shadow: 0 0 0 12px rgba(34,211,238,0); } }
+  .v2-title {
+    font-family: 'Space Grotesk', 'Inter', sans-serif;
+    font-weight: 700; line-height: 0.98; letter-spacing: -0.03em;
+    font-size: clamp(2.8rem, 9vw, 6.5rem);
+    margin: 22px 0 0;
+  }
+  .v2-title-line { display: block; }
+  .v2-gradient-text {
+    background: linear-gradient(110deg, #60a5fa 0%, #22d3ee 45%, #a855f7 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    background-size: 200% auto; animation: v2-shine 6s linear infinite;
+  }
+  @keyframes v2-shine { to { background-position: 200% center; } }
+  .v2-lede { max-width: 620px; margin-top: 28px; font-size: clamp(1rem, 2.2vw, 1.22rem); line-height: 1.7; color: #94a3b8; }
+  .v2-lede strong { color: #f1f5f9; font-weight: 600; }
+  .v2-cta-row { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 36px; }
+  .v2-btn {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 14px 24px; border-radius: 14px; font-size: 15px; font-weight: 600;
+    text-decoration: none; transition: transform 0.2s, box-shadow 0.3s, background 0.3s, border-color 0.3s, color 0.3s;
+  }
+  .v2-btn-primary {
+    color: #04122e;
+    background: linear-gradient(110deg, #7dd3fc, #60a5fa 55%, #a855f7);
+    box-shadow: 0 10px 30px -8px rgba(96, 165, 250, 0.6);
+  }
+  .v2-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 16px 40px -8px rgba(96, 165, 250, 0.8); }
+  .v2-btn-ghost {
+    color: #e2e8f0; background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.14);
+  }
+  .v2-btn-ghost:hover { transform: translateY(-2px); border-color: rgba(125,211,252,0.6); color: #fff; }
+
+  .v2-scrollhint {
+    position: absolute; left: 50%; bottom: 28px; transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+    font-size: 11px; letter-spacing: 0.24em; text-transform: uppercase; color: #64748b;
+  }
+  .v2-mouse { width: 24px; height: 38px; border: 2px solid rgba(148,163,184,0.4); border-radius: 14px; display: flex; justify-content: center; padding-top: 6px; }
+  .v2-wheel { width: 3px; height: 8px; border-radius: 3px; background: #67e8f9; animation: v2-wheel 1.6s ease-in-out infinite; }
+  @keyframes v2-wheel { 0% { opacity: 0; transform: translateY(-4px); } 40% { opacity: 1; } 100% { opacity: 0; transform: translateY(10px); } }
+
+  /* ---------- marquee ---------- */
+  .v2-marquee-section { position: relative; z-index: 1; padding: 30px 0; }
+  .v2-marquee { display: flex; flex-direction: column; gap: 16px; -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); }
+  .v2-marquee-row { display: flex; gap: 14px; width: max-content; }
+  .v2-marquee-left { animation: v2-scroll-l 38s linear infinite; }
+  .v2-marquee-right { animation: v2-scroll-r 44s linear infinite; }
+  .v2-marquee:hover .v2-marquee-row { animation-play-state: paused; }
+  @keyframes v2-scroll-l { to { transform: translateX(-50%); } }
+  @keyframes v2-scroll-r { from { transform: translateX(-50%); } to { transform: translateX(0); } }
+  .v2-chip {
+    flex: none; padding: 10px 18px; border-radius: 999px; font-size: 14px; font-weight: 500;
+    color: #cbd5e1; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+    white-space: nowrap; backdrop-filter: blur(6px);
+  }
+  .v2-chip-dim { color: #94a3b8; }
+
+  /* ---------- ascent / ladder ---------- */
+  .v2-ascent { position: relative; z-index: 1; padding: 90px 0 60px; }
+  .v2-section-head { max-width: 640px; margin: 0 auto 70px; text-align: center; }
+  .v2-kicker { font-size: 13px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: #22d3ee; }
+  .v2-h2 {
+    font-family: 'Space Grotesk', 'Inter', sans-serif; font-weight: 700;
+    font-size: clamp(2rem, 5vw, 3.2rem); line-height: 1.08; letter-spacing: -0.02em;
+    margin: 14px 0 0; color: #f8fafc;
+  }
+  .v2-sub { margin-top: 18px; font-size: 1.05rem; line-height: 1.7; color: #94a3b8; }
+
+  .v2-ladder { position: relative; padding: 20px 0 40px; }
+  .v2-spine-track {
+    position: absolute; top: 0; bottom: 0; left: 24px; width: 3px;
+    background: rgba(148, 163, 184, 0.14); border-radius: 3px;
+  }
+  .v2-spine-fill {
+    position: absolute; top: 0; left: 24px; width: 3px; height: 100%;
+    transform: scaleY(0); transform-origin: top; border-radius: 3px;
+    background: linear-gradient(180deg, #60a5fa, #22d3ee, #a855f7);
+    box-shadow: 0 0 16px rgba(34, 211, 238, 0.7);
+  }
+
+  .v2-rung { position: relative; padding: 0 0 56px 64px; }
+  .v2-rung:last-of-type { padding-bottom: 24px; }
+
+  .v2-node {
+    position: absolute; left: 24px; top: 6px; transform: translateX(-50%);
+    width: 18px; height: 18px; display: grid; place-items: center;
+  }
+  .v2-node-core {
+    width: 12px; height: 12px; border-radius: 50%; background: #0b1024;
+    border: 2px solid rgba(148, 163, 184, 0.5); transition: all 0.45s ease;
+    z-index: 2;
+  }
+  .v2-node-ring {
+    position: absolute; inset: -7px; border-radius: 50%; border: 1px solid rgba(34, 211, 238, 0.4);
+    opacity: 0; transform: scale(0.5); transition: all 0.5s ease;
+  }
+  .v2-rung.active .v2-node-core {
+    background: #22d3ee; border-color: #a5f3fc;
+    box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.18), 0 0 22px 4px rgba(34, 211, 238, 0.7);
+  }
+  .v2-rung.active .v2-node-ring { opacity: 1; transform: scale(1); animation: v2-noderipple 2.2s ease-out infinite; }
+  @keyframes v2-noderipple { 0% { transform: scale(0.7); opacity: 0.7; } 100% { transform: scale(1.8); opacity: 0; } }
+
+  .v2-altitude {
+    position: absolute; left: 24px; top: 30px; transform: translateX(-50%);
+    display: none; flex-direction: column; align-items: center; line-height: 1;
+  }
+  .v2-altitude-num {
+    font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 12px;
+    color: rgba(148,163,184,0.5);
+  }
+  .v2-altitude-label { font-size: 8px; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(148,163,184,0.35); }
+
+  .v2-rung-card {
+    position: relative; padding: 26px 28px; border-radius: 22px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+    border: 1px solid rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 18px 50px -24px rgba(0,0,0,0.8);
+    transition: transform 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+  }
+  .v2-rung.active .v2-rung-card {
+    border-color: rgba(34, 211, 238, 0.4);
+    box-shadow: 0 24px 60px -24px rgba(34, 211, 238, 0.4), 0 0 0 1px rgba(34,211,238,0.15) inset;
+    transform: translateY(-2px);
+  }
+  .v2-rung-top { display: flex; align-items: center; gap: 12px; }
+  .v2-rung-period {
+    font-size: 12px; font-weight: 600; letter-spacing: 0.06em;
+    color: #67e8f9; padding: 5px 12px; border-radius: 999px;
+    background: rgba(34, 211, 238, 0.1); border: 1px solid rgba(34, 211, 238, 0.22);
+  }
+  .v2-now {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+    color: #04122e; padding: 4px 10px; border-radius: 999px;
+    background: linear-gradient(110deg, #7dd3fc, #a855f7);
+  }
+  .v2-rung-role { font-family: 'Space Grotesk', sans-serif; font-size: 1.5rem; font-weight: 700; color: #f8fafc; margin: 16px 0 2px; letter-spacing: -0.01em; }
+  .v2-rung-company { font-size: 0.95rem; font-weight: 600; color: #818cf8; }
+  .v2-rung-desc { margin-top: 12px; color: #94a3b8; line-height: 1.65; }
+  .v2-rung-list { margin-top: 16px; display: flex; flex-direction: column; gap: 10px; }
+  .v2-rung-list li { display: flex; gap: 10px; color: #cbd5e1; font-size: 0.94rem; line-height: 1.5; }
+  .v2-tick { width: 18px; height: 18px; flex: none; margin-top: 2px; color: #22d3ee; }
+
+  .v2-summit { position: relative; padding-left: 64px; display: flex; align-items: center; gap: 16px; }
+  .v2-summit-flag {
+    position: absolute; left: 24px; transform: translateX(-50%);
+    width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%;
+    color: #04122e; background: linear-gradient(110deg, #7dd3fc, #a855f7);
+    box-shadow: 0 0 26px 4px rgba(125, 211, 252, 0.6);
+  }
+  .v2-summit p { font-family: 'Space Grotesk', sans-serif; font-size: 1.1rem; font-weight: 600; color: #e2e8f0; }
+
+  /* ---------- stats ---------- */
+  .v2-stats-section { position: relative; z-index: 1; padding: 60px 0; }
+  .v2-stats {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px;
+    padding: 38px clamp(20px, 4vw, 44px); border-radius: 26px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
+    border: 1px solid rgba(255,255,255,0.08);
+    backdrop-filter: blur(10px);
+  }
+  .v2-stat { text-align: center; }
+  .v2-stat-num {
+    display: block; font-family: 'Space Grotesk', sans-serif; font-weight: 700;
+    font-size: clamp(2.2rem, 6vw, 3.4rem); line-height: 1;
+    background: linear-gradient(110deg, #60a5fa, #22d3ee, #a855f7);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .v2-stat-label { display: block; margin-top: 10px; font-size: 0.86rem; color: #94a3b8; }
+
+  /* ---------- cta ---------- */
+  .v2-cta-section { position: relative; z-index: 1; padding: 40px 0 90px; }
+  .v2-cta-panel {
+    position: relative; overflow: hidden; padding: clamp(36px, 6vw, 72px);
+    border-radius: 32px; text-align: center;
+    background: linear-gradient(160deg, rgba(96,165,250,0.12), rgba(168,85,247,0.1) 60%, rgba(255,255,255,0.02));
+    border: 1px solid rgba(255,255,255,0.12);
+  }
+  .v2-cta-glow {
+    position: absolute; width: 520px; height: 520px; left: 50%; top: -60%; transform: translateX(-50%);
+    background: radial-gradient(circle, rgba(34,211,238,0.35), transparent 60%);
+    filter: blur(30px); pointer-events: none;
+  }
+  .v2-cta-title { position: relative; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: clamp(1.8rem, 5vw, 3rem); letter-spacing: -0.02em; color: #f8fafc; margin: 14px 0 0; }
+  .v2-cta-sub { position: relative; max-width: 520px; margin: 16px auto 0; color: #94a3b8; line-height: 1.65; }
+  .v2-cta-actions { position: relative; margin-top: 32px; display: flex; flex-wrap: wrap; gap: 18px; align-items: center; justify-content: center; }
+  .v2-socials { display: flex; gap: 10px; }
+  .v2-social {
+    display: grid; place-items: center; width: 46px; height: 46px; border-radius: 14px; color: #cbd5e1;
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12);
+    transition: transform 0.2s, color 0.25s, border-color 0.25s, background 0.25s;
+  }
+  .v2-social:hover { transform: translateY(-3px); color: #fff; border-color: rgba(125,211,252,0.6); background: rgba(96,165,250,0.12); }
+  .v2-foot { margin-top: 40px; text-align: center; font-size: 13px; color: #475569; }
+
+  /* ---------- desktop ladder layout ---------- */
+  @media (min-width: 900px) {
+    .v2-spine-track, .v2-spine-fill { left: 50%; transform: translateX(-50%); }
+    .v2-spine-fill { transform: translateX(-50%) scaleY(0); transform-origin: top; }
+    .v2-node { left: 50%; top: 4px; }
+    .v2-altitude { display: flex; left: 50%; top: 28px; }
+    .v2-rung { padding: 0 0 70px; min-height: 40px; }
+    .v2-rung-card { width: calc(50% - 56px); }
+    .v2-rung.is-left .v2-rung-card { margin-right: auto; }
+    .v2-rung.is-right .v2-rung-card { margin-left: auto; }
+    .v2-summit { justify-content: center; padding-left: 0; padding-top: 10px; }
+    .v2-summit-flag { position: relative; left: auto; transform: none; }
+    .v2-stats { grid-template-columns: repeat(4, 1fr); }
+  }
+
+  /* ---------- reduced motion ---------- */
+  @media (prefers-reduced-motion: reduce) {
+    .v2-mesh, .v2-icon-inner, .v2-gradient-text, .v2-stat-num,
+    .v2-marquee-row, .v2-wheel, .v2-pulse, .v2-node-ring { animation: none !important; }
+    html.v2-js .v2-reveal { opacity: 1; transform: none; filter: none; }
+  }
+</style>
+
+<script>
+  const root = document.querySelector('.v2-root');
+  if (root) {
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
+
+    // ----- reveal on scroll -----
+    const revealEls = Array.from(document.querySelectorAll<HTMLElement>('.v2-reveal'));
+    if (reduce) {
+      revealEls.forEach((el) => el.classList.add('in'));
+    } else {
+      const io = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((e) => {
+            if (e.isIntersecting) {
+              e.target.classList.add('in');
+              io.unobserve(e.target);
+            }
+          });
+        },
+        { threshold: 0.15, rootMargin: '0px 0px -8% 0px' }
+      );
+      revealEls.forEach((el) => io.observe(el));
+    }
+
+    // ----- active rung (lights up the one near viewport center) -----
+    const rungs = Array.from(document.querySelectorAll<HTMLElement>('.v2-rung'));
+    const rungIo = new IntersectionObserver(
+      (entries) => entries.forEach((e) => e.target.classList.toggle('active', e.isIntersecting)),
+      { rootMargin: '-46% 0px -46% 0px', threshold: 0 }
+    );
+    rungs.forEach((el) => rungIo.observe(el));
+
+    // ----- count-up stats -----
+    const counters = Array.from(document.querySelectorAll<HTMLElement>('.v2-counter'));
+    const runCount = (el: HTMLElement) => {
+      const target = parseFloat(el.dataset.target || '0');
+      const suffix = el.dataset.suffix || '';
+      if (reduce) {
+        el.textContent = target + suffix;
+        return;
+      }
+      const dur = 1500;
+      const t0 = performance.now();
+      const step = (now: number) => {
+        const t = Math.min((now - t0) / dur, 1);
+        const eased = 1 - Math.pow(1 - t, 3);
+        el.textContent = Math.round(target * eased) + suffix;
+        if (t < 1) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    };
+    const cio = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            runCount(e.target as HTMLElement);
+            cio.unobserve(e.target);
+          }
+        });
+      },
+      { threshold: 0.6 }
+    );
+    counters.forEach((el) => cio.observe(el));
+
+    // ----- hero spotlight -----
+    const hero = document.getElementById('v2-hero');
+    const spot = document.getElementById('v2-spotlight');
+    if (hero && spot && !reduce) {
+      hero.addEventListener(
+        'pointermove',
+        (ev) => {
+          const r = hero.getBoundingClientRect();
+          spot.style.setProperty('--mx', ev.clientX - r.left + 'px');
+          spot.style.setProperty('--my', ev.clientY - r.top + 'px');
+          spot.style.opacity = '1';
+        },
+        { passive: true }
+      );
+      hero.addEventListener('pointerleave', () => (spot.style.opacity = '0'));
+    }
+
+    // ----- scroll-driven: thread draw + comet + progress + spine fill + parallax -----
+    const thread = document.getElementById('thread-path') as SVGPathElement | null;
+    const comet = document.getElementById('v2-comet');
+    const progress = document.getElementById('v2-progress');
+    const spineWrap = document.getElementById('v2-spine');
+    const spineFill = document.getElementById('v2-spine-fill');
+    const icons = Array.from(document.querySelectorAll<HTMLElement>('.v2-icon'));
+    let threadLen = thread ? thread.getTotalLength() : 0;
+    let ticking = false;
+
+    const update = () => {
+      ticking = false;
+      const st = window.scrollY || window.pageYOffset;
+      const vh = window.innerHeight;
+      const docH = document.documentElement.scrollHeight - vh;
+      const p = docH > 0 ? clamp(st / docH, 0, 1) : 0;
+
+      if (progress) progress.style.transform = 'scaleX(' + p + ')';
+
+      if (thread) {
+        thread.style.strokeDashoffset = String(1 - p);
+        if (comet && threadLen) {
+          const pt = thread.getPointAtLength(threadLen * p);
+          const ctm = thread.getScreenCTM();
+          if (ctm) {
+            const sx = pt.x * ctm.a + pt.y * ctm.c + ctm.e;
+            const sy = pt.x * ctm.b + pt.y * ctm.d + ctm.f;
+            comet.style.transform = 'translate(' + sx + 'px,' + sy + 'px)';
+            comet.style.opacity = p > 0.002 && p < 0.998 ? '1' : '0';
+          }
+        }
+      }
+
+      if (spineWrap && spineFill) {
+        const r = spineWrap.getBoundingClientRect();
+        const sp = clamp((vh * 0.5 - r.top) / r.height, 0, 1);
+        const base = window.innerWidth >= 900 ? 'translateX(-50%) ' : '';
+        spineFill.style.transform = base + 'scaleY(' + sp + ')';
+      }
+
+      if (!reduce) {
+        for (const ic of icons) {
+          const speed = parseFloat(ic.dataset.speed || '0');
+          ic.style.transform = 'translate3d(0,' + (st * speed).toFixed(1) + 'px,0)';
+        }
+      }
+    };
+
+    const onScroll = () => {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(update);
+      }
+    };
+
+    const recalc = () => {
+      threadLen = thread ? thread.getTotalLength() : 0;
+      update();
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', recalc, { passive: true });
+    window.addEventListener('load', recalc);
+    update();
+  }
+</script>
