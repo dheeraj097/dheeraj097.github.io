@@ -19,6 +19,12 @@ const gear = skillGroups.flatMap((g) => g.skills);
 const campThresholds = [0.2, 0.46, 0.72];
 const summitThreshold = 0.96;
 
+// Combined ordered stops (camps + summit) so nodes and cards stay in sync.
+const stops = [
+  ...camps.map((c, idx) => ({ kind: 'camp' as const, idx, t: campThresholds[idx], data: c })),
+  { kind: 'summit' as const, idx: camps.length, t: summitThreshold, data: null },
+];
+
 // Floating leaves / nature glyphs for the background.
 const leafIcons: string[] = [
   '<path d="M12 21c6-2 8-7 8-13 0-1.5-.2-3-.5-4.5C15 4 8 6 6 11c-1.5 3.7-1 7 0 10z"/><path d="M12 21C9 16 8 11 9 6"/>', // leaf
@@ -192,36 +198,43 @@ const leaves: Leaf[] = [
             </g>
           </svg>
 
-          <!-- camp cards overlay (positioned along trail by JS) -->
+          <!-- camp overlay: trail nodes (persist) + cards (current only), placed by JS -->
           <div id="v3-camps" class="v3-camps">
-            {camps.map((c, idx) => (
-              <article class="v3-camp" data-t={campThresholds[idx]} data-index={idx}>
-                <div class="v3-camp-node" aria-hidden="true"><span></span></div>
-                <div class="v3-camp-card">
-                  <div class="v3-camp-top">
-                    <span class="v3-camp-tag">Camp {String(idx + 1).padStart(2, '0')}</span>
-                    <span class="v3-camp-period">{c.period}</span>
-                  </div>
-                  <h3 class="v3-camp-role">{c.role}</h3>
-                  <p class="v3-camp-company">{c.company}</p>
-                  <p class="v3-camp-desc">{c.description}</p>
-                  <p class="v3-camp-high">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="m5 12 5 5L20 7"/></svg>
-                    {c.highlights[0]}
-                  </p>
-                </div>
-              </article>
-            ))}
-
-            <article class="v3-camp v3-camp-summit" data-t={summitThreshold} data-index={camps.length}>
-              <div class="v3-camp-node v3-node-summit" aria-hidden="true"><span></span></div>
-              <div class="v3-camp-card">
-                <span class="v3-camp-tag v3-tag-summit">Summit · Now</span>
-                <h3 class="v3-camp-role">Still climbing</h3>
-                <p class="v3-camp-desc">Every summit reveals a higher one. Currently mapping the next ascent — let&apos;s rope up.</p>
-                <a href={siteConfig.social.email} class="v3-btn v3-btn-primary v3-btn-sm">Plan an expedition</a>
-              </div>
-            </article>
+            <div class="v3-nodes">
+              {stops.map((s) => (
+                <span class={`v3-camp-node ${s.kind === 'summit' ? 'v3-node-summit' : ''}`} data-index={s.idx} aria-hidden="true"><span></span></span>
+              ))}
+            </div>
+            <div class="v3-cards">
+              {stops.map((s) => (
+                s.kind === 'camp' ? (
+                  <article class="v3-camp" data-t={s.t} data-index={s.idx}>
+                    <div class="v3-camp-card">
+                      <div class="v3-camp-top">
+                        <span class="v3-camp-tag">Camp {String(s.idx + 1).padStart(2, '0')}</span>
+                        <span class="v3-camp-period">{s.data!.period}</span>
+                      </div>
+                      <h3 class="v3-camp-role">{s.data!.role}</h3>
+                      <p class="v3-camp-company">{s.data!.company}</p>
+                      <p class="v3-camp-desc">{s.data!.description}</p>
+                      <p class="v3-camp-high">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="m5 12 5 5L20 7"/></svg>
+                        {s.data!.highlights[0]}
+                      </p>
+                    </div>
+                  </article>
+                ) : (
+                  <article class="v3-camp v3-camp-summit" data-t={s.t} data-index={s.idx}>
+                    <div class="v3-camp-card">
+                      <span class="v3-camp-tag v3-tag-summit">Summit · Now</span>
+                      <h3 class="v3-camp-role">Still climbing</h3>
+                      <p class="v3-camp-desc">Every summit reveals a higher one. Currently mapping the next ascent — let&apos;s rope up.</p>
+                      <a href={siteConfig.social.email} class="v3-btn v3-btn-primary v3-btn-sm">Plan an expedition</a>
+                    </div>
+                  </article>
+                )
+              ))}
+            </div>
           </div>
 
           <div class="v3-stage-hint" aria-hidden="true">keep scrolling ↓</div>
@@ -394,7 +407,7 @@ const leaves: Leaf[] = [
   .v3-sky { position: absolute; inset: 0; background: linear-gradient(180deg,#0a2c1d 0%, #0e3a26 38%, #15532f 70%, #1c5f33 100%); }
   .v3-stage::after { content: ""; position: absolute; left: 50%; top: 14%; width: 220px; height: 220px; transform: translateX(40vw); border-radius: 50%; background: radial-gradient(circle,#fde68a,#fbbf24 55%,rgba(251,146,60,0) 72%); opacity: .55; pointer-events: none; }
   .v3-stage-head { position: absolute; top: clamp(64px, 11vh, 110px); left: 0; right: 0; text-align: center; z-index: 4; padding: 0 20px; pointer-events: none; }
-  .v3-mountain { position: absolute; left: 50%; bottom: -2%; transform: translateX(-50%); height: 96%; max-height: 940px; width: auto; aspect-ratio: 1; z-index: 2; }
+  .v3-mountain { position: absolute; left: 50%; bottom: -4%; transform: translateX(-50%); height: 86%; max-height: 860px; width: auto; aspect-ratio: 1; z-index: 2; }
   .v3-trail-track { fill: none; stroke: rgba(234,255,245,.18); stroke-width: 5; stroke-dasharray: 2 12; stroke-linecap: round; }
   .v3-trail-draw { fill: none; stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; filter: drop-shadow(0 0 7px rgba(252,211,77,.6)); }
   .v3-hiker { will-change: transform; filter: drop-shadow(0 6px 10px rgba(0,0,0,.5)); }
@@ -402,11 +415,21 @@ const leaves: Leaf[] = [
 
   /* camps overlay */
   .v3-camps { position: absolute; inset: 0; z-index: 5; pointer-events: none; }
-  .v3-camp { position: absolute; left: 0; top: 0; width: min(330px, 78vw); opacity: 0; transition: opacity .5s ease, transform .5s ease; }
-  .v3-camp-node { position: absolute; left: 0; top: 0; width: 16px; height: 16px; transform: translate(-50%,-50%); display: grid; place-items: center; }
-  .v3-camp-node span { width: 12px; height: 12px; border-radius: 50%; background: #fcd34d; box-shadow: 0 0 0 4px rgba(252,211,77,.2), 0 0 14px 3px rgba(252,211,77,.7); }
-  .v3-node-summit span { background: #fb923c; box-shadow: 0 0 0 5px rgba(251,146,60,.22), 0 0 18px 4px rgba(251,146,60,.8); }
-  .v3-camp-card { pointer-events: auto; padding: 18px 20px; border-radius: 18px; background: linear-gradient(180deg, rgba(8,28,18,.92), rgba(6,20,13,.92)); border: 1px solid rgba(163,230,53,.22); backdrop-filter: blur(10px); box-shadow: 0 22px 50px -22px rgba(0,0,0,.85); }
+
+  /* trail nodes — light up cumulatively and stay lit */
+  .v3-nodes { position: absolute; inset: 0; }
+  .v3-camp-node { position: absolute; left: 0; top: 0; width: 16px; height: 16px; transform: translate(-50%,-50%); display: grid; place-items: center; opacity: 0; transition: opacity .4s ease; }
+  .v3-camp-node > span { width: 12px; height: 12px; border-radius: 50%; background: #fcd34d; box-shadow: 0 0 0 4px rgba(252,211,77,.2), 0 0 14px 3px rgba(252,211,77,.7); }
+  .v3-node-summit > span { background: #fb923c; box-shadow: 0 0 0 5px rgba(251,146,60,.22), 0 0 18px 4px rgba(251,146,60,.85); }
+  .v3-camp-node.active { opacity: 1; }
+  .v3-camp-node.is-current > span { animation: v3-nodepulse 1.8s ease-out infinite; }
+  @keyframes v3-nodepulse { 0% { box-shadow: 0 0 0 3px rgba(252,211,77,.35), 0 0 14px 3px rgba(252,211,77,.7); } 70%,100% { box-shadow: 0 0 0 14px rgba(252,211,77,0), 0 0 14px 3px rgba(252,211,77,.4); } }
+
+  /* cards — only the current one is shown, positioned beside its node */
+  .v3-cards { position: absolute; inset: 0; }
+  .v3-camp { position: absolute; left: 0; top: 0; width: min(330px, 80vw); opacity: 0; transform: translateY(14px) scale(.98); transition: opacity .5s ease, transform .5s ease; }
+  .v3-camp.is-current { opacity: 1; transform: none; }
+  .v3-camp-card { pointer-events: auto; padding: 18px 20px; border-radius: 18px; background: linear-gradient(180deg, rgba(8,28,18,.94), rgba(6,20,13,.94)); border: 1px solid rgba(163,230,53,.22); backdrop-filter: blur(10px); box-shadow: 0 22px 50px -22px rgba(0,0,0,.85); }
   .v3-camp-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
   .v3-camp-tag { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #06291b; background: linear-gradient(110deg,#bef264,#34d399); padding: 4px 10px; border-radius: 999px; }
   .v3-tag-summit { background: linear-gradient(110deg,#fcd34d,#fb923c); }
@@ -416,8 +439,7 @@ const leaves: Leaf[] = [
   .v3-camp-desc { margin-top: 9px; font-size: .9rem; line-height: 1.55; color: #a7d3bf; }
   .v3-camp-high { margin-top: 10px; display: flex; gap: 8px; font-size: .86rem; line-height: 1.45; color: #d1fae5; }
   .v3-camp-high svg { flex: none; margin-top: 2px; color: #a3e635; }
-  .v3-camp.active { opacity: 1; }
-  html:not(.v3-js) .v3-camp { opacity: 1; position: relative; width: auto; margin: 12px 0; }
+  html:not(.v3-js) .v3-camp { opacity: 1; position: relative; width: auto; margin: 12px 0; transform: none; }
 
   .v3-hud { position: absolute; left: clamp(16px,4vw,40px); top: 50%; transform: translateY(-50%); z-index: 6; display: flex; flex-direction: column; align-items: center; gap: 10px; pointer-events: none; }
   .v3-hud-label { writing-mode: vertical-rl; font-size: 10px; letter-spacing: .25em; text-transform: uppercase; color: #7fae97; }
@@ -464,12 +486,11 @@ const leaves: Leaf[] = [
 
   /* ---------- mobile camps: bottom sheet ---------- */
   @media (max-width: 767px) {
-    html.v3-js .v3-camp { left: 50% !important; top: auto !important; bottom: 4%; width: 90vw; transform: translateX(-50%) translateY(20px); }
-    html.v3-js .v3-camp .v3-camp-node { display: none; }
-    html.v3-js .v3-camp.active { transform: translateX(-50%) translateY(0); }
-    html.v3-js .v3-camp:not(.is-current) { opacity: 0; pointer-events: none; }
+    html.v3-js .v3-camp { left: 50% !important; top: auto !important; bottom: 3%; width: 92vw; transform: translateX(-50%) translateY(20px); }
+    html.v3-js .v3-camp.is-current { transform: translateX(-50%) translateY(0); }
+    .v3-nodes { display: none; }
     .v3-hud { display: none; }
-    .v3-mountain { height: 70%; bottom: 8%; }
+    .v3-mountain { height: 72%; bottom: 7%; }
   }
 
   /* ---------- reduced motion ---------- */
@@ -479,7 +500,7 @@ const leaves: Leaf[] = [
     .v3-expedition { height: auto; }
     .v3-stage { position: relative; height: auto; padding: 80px 0; }
     html.v3-js .v3-camp { position: relative; opacity: 1; left: auto !important; top: auto !important; transform: none !important; width: min(560px,90vw); margin: 14px auto; }
-    html.v3-js .v3-camp .v3-camp-node { display: none; }
+    .v3-nodes { display: none; }
     .v3-mountain { position: relative; transform: none; left: auto; margin: 0 auto 30px; display: block; height: auto; width: min(560px,90vw); }
   }
 </style>
@@ -540,35 +561,36 @@ const leaves: Leaf[] = [
     const hiker = document.getElementById('v3-hiker') as SVGGElement | null;
     const gauge = document.getElementById('v3-gauge-fill');
     const elev = document.getElementById('v3-elev');
-    const campEls = Array.from(document.querySelectorAll<HTMLElement>('.v3-camp'));
+    const cardEls = Array.from(document.querySelectorAll<HTMLElement>('.v3-camp'));
+    const nodeEls = Array.from(document.querySelectorAll<HTMLElement>('.v3-camp-node'));
     let trailLen = trail ? trail.getTotalLength() : 0;
     const MAX_ELEV = 4810; // a nod to Mont Blanc
 
-    // place each camp node + card along the trail
+    // place each trail node + its card along the trail (in stage coords)
     const placeCamps = () => {
       if (!trail || !stage || reduce) return;
       const ctm = trail.getScreenCTM();
       if (!ctm) return;
       const sr = stage.getBoundingClientRect();
       const w = sr.width;
-      campEls.forEach((camp) => {
-        const t = parseFloat(camp.dataset.t || '0');
+      const isMobile = window.innerWidth < 768;
+      cardEls.forEach((card) => {
+        const idx = parseInt(card.dataset.index || '0', 10);
+        const t = parseFloat(card.dataset.t || '0');
         const pt = trail.getPointAtLength(trailLen * t);
         const sx = pt.x * ctm.a + pt.y * ctm.c + ctm.e - sr.left;
         const sy = pt.x * ctm.b + pt.y * ctm.d + ctm.f - sr.top;
-        const node = camp.querySelector<HTMLElement>('.v3-camp-node');
-        const card = camp.querySelector<HTMLElement>('.v3-camp-card');
+        const node = nodeEls[idx];
         if (node) { node.style.left = sx + 'px'; node.style.top = sy + 'px'; }
-        // choose side with more room
+        if (isMobile) return; // mobile cards are pinned via CSS
+        const cw = card.offsetWidth || 320;
+        const ch = card.offsetHeight || 190;
         const toRight = sx < w * 0.5;
-        const cw = card ? card.offsetWidth : 300;
-        let cx = toRight ? sx + 26 : sx - 26 - cw;
-        cx = clamp(cx, 12, w - cw - 12);
-        camp.style.left = cx + 'px';
-        // vertical: center card on node, clamp into view
-        const ch = card ? card.offsetHeight : 180;
-        let cy = clamp(sy - ch / 2, 84, sr.height - ch - 16);
-        camp.style.top = cy + 'px';
+        let cx = toRight ? sx + 28 : sx - 28 - cw;
+        cx = clamp(cx, 14, w - cw - 14);
+        let cy = clamp(sy - ch / 2, 96, sr.height - ch - 20);
+        card.style.left = cx + 'px';
+        card.style.top = cy + 'px';
       });
     };
 
@@ -605,16 +627,19 @@ const leaves: Leaf[] = [
         if (gauge) gauge.style.height = (p * 100).toFixed(1) + '%';
         if (elev) elev.textContent = Math.round(p * MAX_ELEV).toLocaleString() + ' m';
 
-        // camp activation + current (for mobile bottom sheet)
+        // nodes light up cumulatively; only the latest reached card is shown
         let currentIdx = -1;
-        campEls.forEach((camp) => {
-          const t = parseFloat(camp.dataset.t || '0');
-          const on = p >= t - 0.02;
-          camp.classList.toggle('active', on);
-          if (on) currentIdx = parseInt(camp.dataset.index || '-1', 10);
+        cardEls.forEach((card) => {
+          const t = parseFloat(card.dataset.t || '0');
+          if (p >= t - 0.02) currentIdx = parseInt(card.dataset.index || '-1', 10);
         });
-        campEls.forEach((camp) => {
-          camp.classList.toggle('is-current', parseInt(camp.dataset.index || '-1', 10) === currentIdx);
+        nodeEls.forEach((node, i) => {
+          const t = parseFloat(cardEls[i]?.dataset.t || '0');
+          node.classList.toggle('active', p >= t - 0.02);
+          node.classList.toggle('is-current', i === currentIdx);
+        });
+        cardEls.forEach((card) => {
+          card.classList.toggle('is-current', parseInt(card.dataset.index || '-1', 10) === currentIdx);
         });
       }
     };
